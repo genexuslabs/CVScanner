@@ -39,6 +39,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
     public static final String EXTRA_TORCH_TINT_COLOR_LIGHT = "torch_tint_color_light";
     public static final String EXTRA_IS_PASSPORT = "is_passport";
     public static final String EXTRA_SHOW_FLASH = "show_flash";
+    public static final String EXTRA_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -92,23 +93,23 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
         }
     }
 
-    void addScannerFragment(){
+    void addScannerFragment() {
         Bundle extras = getIntent().getExtras();
         boolean isScanningPassport = extras != null && getIntent().getBooleanExtra(EXTRA_IS_PASSPORT, false);
         boolean showFlash = extras != null && getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
+        boolean disableAutomaticCapture = extras != null && getIntent().getBooleanExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, false);
 
         DocumentScannerFragment fragment = null;
 
-        if (extras != null){
+        if (extras != null) {
             int borderColor = extras.getInt(EXTRA_DOCUMENT_BORDER_COLOR, -1);
             int bodyColor = extras.getInt(EXTRA_DOCUMENT_BODY_COLOR, -1);
             int torchTintColor = extras.getInt(EXTRA_TORCH_TINT_COLOR, getResources().getColor(R.color.dark_gray));
             int torchTintLightColor = extras.getInt(EXTRA_TORCH_TINT_COLOR_LIGHT, getResources().getColor(R.color.torch_yellow));
 
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, borderColor, bodyColor, torchTintColor, torchTintLightColor);
-        }
-        else{
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash);
+            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, borderColor, bodyColor, torchTintColor, torchTintLightColor);
+        } else {
+            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture);
         }
 
         getSupportFragmentManager().beginTransaction()

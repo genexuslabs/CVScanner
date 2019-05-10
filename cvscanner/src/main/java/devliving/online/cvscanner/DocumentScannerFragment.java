@@ -40,8 +40,10 @@ import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 /**
  * Created by Mehedi on 10/23/16.
  */
-public class DocumentScannerFragment extends BaseFragment implements View.OnTouchListener, DocumentTracker.DocumentDetectionListener {
+public class DocumentScannerFragment extends BaseFragment implements DocumentTracker.DocumentDetectionListener {
+    private final static String ARG_IS_PASSPORT = "is_passport";
     private final static String ARG_SHOW_FLASH = "show_flash";
+    private final static String ARG_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
@@ -56,6 +58,9 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
     private boolean showFlash;
     private ImageButton flashToggle;
 
+    private boolean disableAutomaticCapture;
+    private ImageButton takePictureButton;
+
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
     private GraphicOverlay<DocumentGraphic> mGraphicOverlay;
@@ -69,29 +74,34 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
 
     private boolean isPassport = false;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash) {
+    private int mDocumentDetected = 0;
+    private Point[] lastQuadPoints;
+    private final static int AUTO_SCAN_THRESHOLD = 3;
+    private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
+
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
-        args.putBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
+        args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         fragment.setArguments(args);
-
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, @ColorRes int docBorderColorRes,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, @ColorRes int docBorderColorRes,
                                                       @ColorRes int docBodyColorRes, @ColorRes int torchColor,
                                                       @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
-        args.putBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
+        args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
         args.putInt(ARG_TORCH_COLOR, torchColor);
         args.putInt(ARG_TORCH_COLOR_LIGHT, torchColorLight);
         fragment.setArguments(args);
-
         return fragment;
     }
 
@@ -139,18 +149,15 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         mPreview = view.findViewById(R.id.preview);
         mGraphicOverlay = view.findViewById(R.id.graphicOverlay);
         flashToggle = view.findViewById(R.id.flash);
-        if (!showFlash)
-            flashToggle.setVisibility(View.GONE);
-
-        gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
-        view.setOnTouchListener(this);
+        takePictureButton = view.findViewById(R.id.takePicture);
     }
 
     @Override
     protected void onAfterViewCreated() {
         Bundle args = getArguments();
-        isPassport = args != null && args.getBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, false);
+        isPassport = args != null && args.getBoolean(ARG_IS_PASSPORT, false);
         showFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
+        disableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
 
         Resources.Theme theme = getActivity().getTheme();
         TypedValue borderColor = new TypedValue();
@@ -182,6 +189,17 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
                     updateFlashButtonColor();
                 }
             });
+        } else {
+            flashToggle.setVisibility(View.GONE);
+        }
+
+        if (disableAutomaticCapture) {
+            takePictureButton.setOnClickListener(v -> {
+                if (mCameraSource != null)
+                    mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), data -> detectDocumentManually(data));
+            });
+        } else {
+            takePictureButton.setVisibility(View.GONE);
         }
     }
 
@@ -311,11 +329,6 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         }
     }
 
-    private int mDocumentDetected = 0;
-    private Point[] lastQuadPoints;
-    private final static int AUTO_SCAN_THRESHOLD = 3;
-    private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
-
     private boolean matchLastQuadPoints(Point[] points) {
         if (points.length < 4) {
             lastQuadPoints = null;
@@ -357,7 +370,7 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
     @Override
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
-        if (document != null) {
+        if (document != null && !disableAutomaticCapture) {
             if (!matchLastQuadPoints(document.detectedQuad.points)) {
                 mDocumentDetected = 0;
             } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
@@ -372,83 +385,21 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
 
     void detectDocumentManually(final byte[] data){
         Log.d("Scanner", "detecting document manually");
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
-                if(image != null){
-                    final SparseArray<Document> docs = IDDetector.detect(new Frame.Builder()
-                            .setBitmap(image)
-                            .build());
+        new Thread(() -> {
+            Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
+            if(image != null){
+                final SparseArray<Document> docs = IDDetector.detect(new Frame.Builder()
+                        .setBitmap(image)
+                        .build());
 
-                    if(docs != null && docs.size() > 0){
-                        Log.d("Scanner", "detected document manually");
-                        final Document doc = docs.get(0);
-
-                        getActivity().runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-                                processDocument(doc);
-                            }
-                        });
-                    }
-                    else{
-                        getActivity().finish();
-                    }
+                if (docs != null && docs.size() > 0) {
+                    Log.d("Scanner", "detected document manually");
+                    final Document document = docs.get(0);
+                    getActivity().runOnUiThread(() -> processDocument(document));
+                } else {
+                    getActivity().finish();
                 }
             }
         }).start();
-    }
-
-    void takePicture(){
-        if(mCameraSource != null){
-            mCameraSource.takePicture(new CameraSource.ShutterCallback() {
-                @Override
-                public void onShutter() {
-                    sound.play(MediaActionSound.SHUTTER_CLICK);
-                }
-            }, new CameraSource.PictureCallback() {
-                @Override
-                public void onPictureTaken(byte[] data) {
-                    detectDocumentManually(data);
-                }
-            });
-        }
-    }
-
-    /**
-     * Called when a touch event is dispatched to a view. This allows listeners to
-     * get a chance to respond before the target view.
-     *
-     * @param v     The view the touch event has been dispatched to.
-     * @param event The MotionEvent object containing full information about
-     *              the event.
-     * @return True if the listener has consumed the event, false otherwise.
-     */
-    @Override
-    public boolean onTouch(View v, MotionEvent event) {
-        Log.d("SCANNER", "fragment got touch");
-        boolean g = gestureDetector.onTouchEvent(event);
-
-        return g || v.onTouchEvent(event);
-    }
-
-    private class CaptureGestureListener extends GestureDetector.SimpleOnGestureListener {
-        boolean hasShownMsg = false;
-        @Override
-        public boolean onSingleTapConfirmed(MotionEvent e) {
-            Log.d("SCANNER", "fragment got tap");
-            if(!hasShownMsg){
-                Toast.makeText(getActivity(), "Double tap to take a picture and force detection", Toast.LENGTH_SHORT).show();
-                hasShownMsg = true;
-            }
-            return false;
-        }
-
-        @Override
-        public boolean onDoubleTap(MotionEvent e) {
-            takePicture();
-            return true;
-        }
     }
 }
