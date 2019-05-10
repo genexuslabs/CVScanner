@@ -28,6 +28,8 @@ import android.widget.Toast;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
 
+import org.opencv.core.Point;
+
 import java.io.IOException;
 
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
@@ -219,10 +221,10 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
      */
     @SuppressLint("InlinedApi")
     private void createCameraSource() {
-        if(isPassport){
+        if (isPassport)
             IDDetector = new PassportDetector(mFrameSizeProvider);
-        }
-        else IDDetector = new DocumentDetector(getContext());
+        else
+            IDDetector = new DocumentDetector(getContext());
 
         /*
         DocumentTrackerFactory factory = new DocumentTrackerFactory(mGraphicOverlay, this);
@@ -239,12 +241,12 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         // Creates and starts the camera.  Note that this uses a higher resolution in comparison
         // to other detection examples to enable the barcode detector to detect small barcodes
         // at long distances.
-        mCameraSource  = new CameraSource.Builder(getActivity().getApplicationContext(), IDDetector)
+        mCameraSource = new CameraSource.Builder(getActivity().getApplicationContext(), IDDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
                 .setFlashMode(Camera.Parameters.FLASH_MODE_AUTO)
                 .setRequestedFps(15.0f)
-        .build();
+                .build();
     }
 
     /**
@@ -306,18 +308,62 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         }
     }
 
+    private int mDocumentDetected = 0;
+    private Point[] lastQuadPoints;
+    private final static int AUTO_SCAN_THRESHOLD = 3;
+    private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
+
+    private boolean matchLastQuadPoints(Point[] points) {
+        if (points.length < 4) {
+            lastQuadPoints = null;
+            return false;
+        }
+
+        for (int n = 0; n < points.length; n++)
+            for (int m = 1; m < points.length; m++)
+                if (m != n && points[n].x == points[m].x && points[n].y == points[m].y) {
+                    // triangle
+                    lastQuadPoints = null;
+                    return false;
+                }
+
+        if (lastQuadPoints == null) {
+            lastQuadPoints = points;
+            return true;
+        }
+
+        if (points.length != lastQuadPoints.length) {
+            lastQuadPoints = null;
+            return false;
+        }
+
+        for (int n = 0; n < points.length; n++) {
+            double xDifference = points[n].x - lastQuadPoints[n].x;
+            double yDifference = points[n].y - lastQuadPoints[n].y;
+            double distanceSquare = xDifference * xDifference + yDifference * yDifference;
+            if (distanceSquare > MATCHING_THRESHOLD_SQUARED) {
+                lastQuadPoints = null;
+                return false;
+            }
+        }
+
+        lastQuadPoints = points;
+        return true;
+    }
+
     @Override
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
         if (document != null) {
-            document.detectedQuad.points;
-            getActivity().runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    if (mCameraSource != null) mCameraSource.stop();
+            if (!matchLastQuadPoints(document.detectedQuad.points)) {
+                mDocumentDetected = 0;
+            } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
+                getActivity().runOnUiThread(() -> {
+                    if (mCameraSource != null)
+                        mCameraSource.stop();
                     processDocument(document);
-                }
-            });
+                });
+            }
         }
     }
 
