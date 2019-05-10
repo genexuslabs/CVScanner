@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(view -> startScannerIntent(false, true, true));
+        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
         fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)

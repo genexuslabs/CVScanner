@@ -61,6 +61,12 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
         Mat croppedImage = CVProcessor.fourPointTransform(imageMat, points);
         imageMat.release();
 
+/*        Mat enhancedImage = CVProcessor.convertBlackAndWhite(croppedImage);
+        croppedImage.release();
+
+        Mat enhancedImage = CVProcessor.convertGrayScale(croppedImage);
+        croppedImage.release();
+*/
         Mat enhancedImage = CVProcessor.adjustBirghtnessAndContrast(croppedImage, 1);
         croppedImage.release();
 

@@ -790,12 +790,25 @@ public class CVProcessor {
         return result;
     }
 
-    public static Mat sharpenImage(Mat src){
+    public static Mat sharpenImage(Mat src) {
         Mat sharped = new Mat();
         Imgproc.GaussianBlur(src, sharped, new Size(0, 0), 3);
         Core.addWeighted(src, 1.5, sharped, -0.5, 0, sharped);
-
         return sharped;
+    }
+
+    public static Mat convertGrayscale(Mat src) {
+        Mat dst = new Mat();
+        Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY);
+        return dst;
+    }
+
+    public static Mat convertBlackAndWhite(Mat src) {
+        Mat dst = new Mat();
+        Mat dst1 = new Mat();
+        Imgproc.cvtColor(src, dst, Imgproc.COLOR_RGB2GRAY);
+        Imgproc.threshold(dst, dst1, 127, 255, Imgproc.THRESH_BINARY);
+        return dst1;
     }
 
     public static class Quadrilateral {
