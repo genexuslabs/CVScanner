@@ -55,47 +55,24 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setMessage("Are you scanning a Passport?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startScannerIntent(true);
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                startScannerIntent(false);
-                            }
-                        }).show();
-            }
-        });
+        fabScan.setOnClickListener(view -> startScannerIntent(false));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
-        fabCrop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new AlertDialog.Builder(MainActivity.this)
-                        .setMessage("Choose photo to crop")
-                        .setPositiveButton("With Camera", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                            startCameraIntent();
-                            }
-                        })
-                        .setNeutralButton("From Device", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                startImagePickerIntent();
-                            }
-                        })
-                        .show();
-            }
-        });
+        fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
+                .setMessage("Choose photo to crop")
+                .setPositiveButton("With Camera", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    startCameraIntent();
+                    }
+                })
+                .setNeutralButton("From Device", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        startImagePickerIntent();
+                    }
+                })
+                .show());
 
     }
 

@@ -309,11 +309,12 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
     @Override
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
-        if(document != null){
+        if (document != null) {
+            document.detectedQuad.points;
             getActivity().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    if(mCameraSource != null) mCameraSource.stop();
+                    if (mCameraSource != null) mCameraSource.stop();
                     processDocument(document);
                 }
             });
