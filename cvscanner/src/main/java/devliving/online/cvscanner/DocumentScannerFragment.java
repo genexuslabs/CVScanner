@@ -41,6 +41,7 @@ import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
  * Created by Mehedi on 10/23/16.
  */
 public class DocumentScannerFragment extends BaseFragment implements View.OnTouchListener, DocumentTracker.DocumentDetectionListener {
+    private final static String ARG_SHOW_FLASH = "show_flash";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
@@ -50,9 +51,9 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
     Context mContext;
 
     private int torchTintColor = Color.GRAY, torchTintColorLight = Color.YELLOW;
-    private int documentBorderColor = -1,
-            documentBodyColor = -1;
+    private int documentBorderColor = -1, documentBodyColor = -1;
 
+    private boolean showFlash;
     private ImageButton flashToggle;
 
     private CameraSource mCameraSource;
@@ -68,26 +69,27 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
 
     private boolean isPassport = false;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport){
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        args.putBoolean(ARG_SHOW_FLASH, showFlash);
         fragment.setArguments(args);
 
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, @ColorRes int docBorderColorRes,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, @ColorRes int docBorderColorRes,
                                                       @ColorRes int docBodyColorRes, @ColorRes int torchColor,
-                                                      @ColorRes int torchColorLight){
+                                                      @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
         args.putInt(ARG_TORCH_COLOR, torchColor);
         args.putInt(ARG_TORCH_COLOR_LIGHT, torchColorLight);
-
         fragment.setArguments(args);
 
         return fragment;
@@ -137,6 +139,8 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         mPreview = view.findViewById(R.id.preview);
         mGraphicOverlay = view.findViewById(R.id.graphicOverlay);
         flashToggle = view.findViewById(R.id.flash);
+        if (!showFlash)
+            flashToggle.setVisibility(View.GONE);
 
         gestureDetector = new GestureDetector(getActivity(), new CaptureGestureListener());
         view.setOnTouchListener(this);
@@ -146,6 +150,7 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
     protected void onAfterViewCreated() {
         Bundle args = getArguments();
         isPassport = args != null && args.getBoolean(DocumentScannerActivity.EXTRA_IS_PASSPORT, false);
+        showFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
 
         Resources.Theme theme = getActivity().getTheme();
         TypedValue borderColor = new TypedValue();
@@ -167,19 +172,17 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         mFrameSizeProvider = frameGraphic;
         mGraphicOverlay.addFrame(frameGraphic);
 
-        flashToggle.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(mCameraSource != null){
-                    if(mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH){
+        if (showFlash) {
+            flashToggle.setOnClickListener(v -> {
+                if (mCameraSource != null) {
+                    if (mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH)
                         mCameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
-                    }
-                    else mCameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
-
+                    else
+                        mCameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
                     updateFlashButtonColor();
                 }
-            }
-        });
+            });
+        }
     }
 
     @Override
@@ -244,7 +247,7 @@ public class DocumentScannerFragment extends BaseFragment implements View.OnTouc
         mCameraSource = new CameraSource.Builder(getActivity().getApplicationContext(), IDDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
-                .setFlashMode(Camera.Parameters.FLASH_MODE_AUTO)
+                .setFlashMode(showFlash ? Camera.Parameters.FLASH_MODE_AUTO : Camera.Parameters.FLASH_MODE_OFF)
                 .setRequestedFps(15.0f)
                 .build();
     }

@@ -55,7 +55,7 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(view -> startScannerIntent(false));
+        fabScan.setOnClickListener(view -> startScannerIntent(false, false));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
         fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
@@ -76,8 +76,8 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    void startScannerIntent(boolean isPassport){
-        CVScanner.startScanner(this, isPassport, REQ_SCAN);
+    void startScannerIntent(boolean isPassport, boolean showFlash){
+        CVScanner.startScanner(this, isPassport, showFlash, REQ_SCAN);
     }
 
     void startCameraIntent(){

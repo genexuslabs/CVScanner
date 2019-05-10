@@ -54,18 +54,20 @@ public final class CVScanner {
         return null;
     }
 
-    public static void startScanner(Activity activity, boolean isPassport, int reqCode){
+    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, int reqCode) {
         Intent i = new Intent(activity, DocumentScannerActivity.class);
         i.putExtra(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        i.putExtra(DocumentScannerActivity.EXTRA_SHOW_FLASH, showFlash);
         activity.startActivityForResult(i, reqCode);
     }
 
-    public static void startScanner(Activity activity, boolean isPassport, int reqCode,
+    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, int reqCode,
                                     @ColorRes int docBorderColorRes,
                                     @ColorRes int docBodyColorRes, @ColorRes int torchColor,
                                     @ColorRes int torchColorLight){
         Intent i = new Intent(activity, DocumentScannerActivity.class);
         i.putExtra(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
+        i.putExtra(DocumentScannerActivity.EXTRA_SHOW_FLASH, showFlash);
         i.putExtra(DocumentScannerActivity.EXTRA_DOCUMENT_BODY_COLOR, docBodyColorRes);
         i.putExtra(DocumentScannerActivity.EXTRA_DOCUMENT_BORDER_COLOR, docBorderColorRes);
         i.putExtra(DocumentScannerActivity.EXTRA_TORCH_TINT_COLOR, torchColor);
