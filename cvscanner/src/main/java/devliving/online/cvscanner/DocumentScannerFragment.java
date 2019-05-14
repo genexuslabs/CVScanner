@@ -330,12 +330,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     }
 
     private boolean matchLastQuadPoints(Point[] points) {
-        if (points.length < 4) {
-            lastQuadPoints = null;
-            return false;
-        }
-
-        for (int n = 0; n < points.length; n++)
+         for (int n = 0; n < points.length; n++)
             for (int m = 1; m < points.length; m++)
                 if (m != n && points[n].x == points[m].x && points[n].y == points[m].y) {
                     // triangle
