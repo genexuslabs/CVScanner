@@ -2,6 +2,7 @@ package devliving.online.cvscanner;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
@@ -9,9 +10,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.media.MediaActionSound;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.ColorRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -22,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Toast;
 
@@ -60,6 +64,11 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     private boolean disableAutomaticCapture;
     private ImageButton takePictureButton;
+    private Button cancelButton;
+    private Button manualButton;
+    private Button doneButton;
+    private ImageButton colorButton;
+    private View documentsButton;
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -150,6 +159,11 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mGraphicOverlay = view.findViewById(R.id.graphicOverlay);
         flashToggle = view.findViewById(R.id.flash);
         takePictureButton = view.findViewById(R.id.takePicture);
+        cancelButton = view.findViewById(R.id.cancel);
+        manualButton = view.findViewById(R.id.manual);
+        doneButton = view.findViewById(R.id.done);
+        colorButton = view.findViewById(R.id.color);
+        documentsButton = view.findViewById(R.id.documents);
     }
 
     @Override
@@ -193,13 +207,28 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             flashToggle.setVisibility(View.GONE);
         }
 
-        if (disableAutomaticCapture) {
-            takePictureButton.setOnClickListener(v -> {
-                if (mCameraSource != null)
-                    mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), data -> detectDocumentManually(data));
-            });
-        } else {
-            takePictureButton.setVisibility(View.GONE);
+        takePictureButton.setOnClickListener(v -> {
+            if (mCameraSource != null)
+                mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), data -> detectDocumentManually(data));
+        });
+
+        if (disableAutomaticCapture)
+            manualButton.setVisibility(View.GONE);
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig){
+        super.onConfigurationChanged(newConfig);
+        if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT){
+            try {
+                FragmentTransaction ft = getFragmentManager().beginTransaction();
+                if (Build.VERSION.SDK_INT >= 26) {
+                    ft.setReorderingAllowed(false);
+                }
+                ft.detach(this).attach(this).commit();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

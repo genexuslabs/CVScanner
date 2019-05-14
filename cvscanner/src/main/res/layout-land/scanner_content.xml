@@ -40,7 +40,7 @@
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
             android:src="@drawable/ic_flash"
-            android:layout_marginLeft="50dp"/>
+            android:layout_marginLeft="200dp"/>
 
     </LinearLayout>
 
@@ -73,7 +73,7 @@
         android:background="@android:color/transparent"
         android:scaleType="fitXY"
         android:src="@drawable/ic_check_circle"
-        android:layout_gravity="bottom|center"
+        android:layout_gravity="center|right"
         android:layout_margin="30dp"/>
 
     <View
