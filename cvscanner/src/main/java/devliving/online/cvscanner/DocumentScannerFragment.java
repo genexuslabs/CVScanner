@@ -22,12 +22,10 @@ import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.Frame;
@@ -45,9 +43,14 @@ import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
  * Created by Mehedi on 10/23/16.
  */
 public class DocumentScannerFragment extends BaseFragment implements DocumentTracker.DocumentDetectionListener {
+    public final static int V_COLOR_TYPE_COLOR = 0;
+    public final static int V_COLOR_TYPE_GRAYSCALE = 1;
+    public final static int V_COLOR_TYPE_BLACK_WHITE = 2;
+    public final static int V_COLOR_TYPE_PHOTO = 3;
     private final static String ARG_IS_PASSPORT = "is_passport";
     private final static String ARG_SHOW_FLASH = "show_flash";
     private final static String ARG_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
+    private final static String ARG_COLOR_TYPE = "color_type";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
@@ -56,24 +59,32 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     final Object mLock = new Object();
     Context mContext;
 
-    private int torchTintColor = Color.GRAY, torchTintColorLight = Color.YELLOW;
-    private int documentBorderColor = -1, documentBodyColor = -1;
+    private int mTorchTintColor = Color.GRAY, mTorchTintColorLight = Color.YELLOW;
+    private int mDocumentBorderColor = -1, mDocumentBodyColor = -1;
 
-    private boolean showFlash;
-    private ImageButton flashToggle;
+    private boolean mShowFlash;
+    private ImageButton mFlashToggle;
+    private boolean mDisableAutomaticCapture;
+    private int mColorType;
 
-    private boolean disableAutomaticCapture;
-    private ImageButton takePictureButton;
-    private Button cancelButton;
-    private Button manualButton;
-    private Button doneButton;
-    private ImageButton colorButton;
-    private View documentsButton;
+    private ImageButton mTakePictureButton;
+    private Button mCancelButton;
+    private Button mManualButton;
+    private Button mDoneButton;
+    private ImageButton mColorButton;
+    private View mDocumentsButton;
+    private View mTopPanel;
+    private View mColorPicker;
+    private ImageButton mColorPickerButton;
+    private Button mColorPickerColorOptionButton;
+    private Button mColorPickerGrayscaleOptionButton;
+    private Button mColorPickerBlackWhiteOptionButton;
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
     private GraphicOverlay<DocumentGraphic> mGraphicOverlay;
     private Util.FrameSizeProvider mFrameSizeProvider;
+    private boolean mManual = false;
 
     // helper objects for detecting taps and pinches.
     private GestureDetector gestureDetector;
@@ -88,24 +99,25 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static int AUTO_SCAN_THRESHOLD = 3;
     private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
+        args.putInt(ARG_COLOR_TYPE, colorType);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, @ColorRes int docBorderColorRes,
-                                                      @ColorRes int docBodyColorRes, @ColorRes int torchColor,
-                                                      @ColorRes int torchColorLight) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType,
+                                                      @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
+        args.putInt(ARG_COLOR_TYPE, colorType);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
         args.putInt(ARG_TORCH_COLOR, torchColor);
@@ -120,26 +132,26 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
         TypedArray array = context.obtainStyledAttributes(attrs, R.styleable.DocumentScannerFragment);
 
-        torchTintColor = array.getColor(R.styleable.DocumentScannerFragment_torchTint, torchTintColor);
-        torchTintColorLight = array.getColor(R.styleable.DocumentScannerFragment_torchTintLight, torchTintColorLight);
+        mTorchTintColor = array.getColor(R.styleable.DocumentScannerFragment_torchTint, mTorchTintColor);
+        mTorchTintColorLight = array.getColor(R.styleable.DocumentScannerFragment_torchTintLight, mTorchTintColorLight);
         Log.d("SCANNER-INFLATE", "resolved torch tint colors");
 
         Resources.Theme theme = context.getTheme();
         TypedValue borderColor = new TypedValue();
-        if(theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)){
+        if (theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)) {
             Log.d("SCANNER-INFLATE", "resolved border color from theme");
-            documentBorderColor = borderColor.resourceId > 0? getResources().getColor(borderColor.resourceId) : borderColor.data;
+            mDocumentBorderColor = borderColor.resourceId > 0 ? getResources().getColor(borderColor.resourceId) : borderColor.data;
         }
 
-        documentBorderColor = array.getColor(R.styleable.DocumentScannerFragment_documentBorderColor, documentBorderColor);
+        mDocumentBorderColor = array.getColor(R.styleable.DocumentScannerFragment_documentBorderColor, mDocumentBorderColor);
 
         TypedValue bodyColor = new TypedValue();
-        if(theme.resolveAttribute(android.R.attr.colorPrimaryDark, bodyColor, true)){
+        if (theme.resolveAttribute(android.R.attr.colorPrimaryDark, bodyColor, true)) {
             Log.d("SCANNER-INFLATE", "resolved body color from theme");
-            documentBodyColor = bodyColor.resourceId > 0? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
+            mDocumentBodyColor = bodyColor.resourceId > 0 ? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
         }
 
-        documentBodyColor = array.getColor(R.styleable.DocumentScannerFragment_documentBodyColor, documentBodyColor);
+        mDocumentBodyColor = array.getColor(R.styleable.DocumentScannerFragment_documentBodyColor, mDocumentBodyColor);
 
         array.recycle();
     }
@@ -157,46 +169,53 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     void initializeViews(View view){
         mPreview = view.findViewById(R.id.preview);
         mGraphicOverlay = view.findViewById(R.id.graphicOverlay);
-        flashToggle = view.findViewById(R.id.flash);
-        takePictureButton = view.findViewById(R.id.takePicture);
-        cancelButton = view.findViewById(R.id.cancel);
-        manualButton = view.findViewById(R.id.manual);
-        doneButton = view.findViewById(R.id.done);
-        colorButton = view.findViewById(R.id.color);
-        documentsButton = view.findViewById(R.id.documents);
+        mFlashToggle = view.findViewById(R.id.flash);
+        mTakePictureButton = view.findViewById(R.id.takePicture);
+        mCancelButton = view.findViewById(R.id.cancel);
+        mManualButton = view.findViewById(R.id.manual);
+        mDoneButton = view.findViewById(R.id.done);
+        mColorButton = view.findViewById(R.id.color);
+        mDocumentsButton = view.findViewById(R.id.documents);
+        mTopPanel = view.findViewById(R.id.topPanel);
+        mColorPicker = view.findViewById(R.id.colorPicker);
+        mColorPickerButton = view.findViewById(R.id.colorImage);
+        mColorPickerColorOptionButton = view.findViewById(R.id.colorButton);
+        mColorPickerGrayscaleOptionButton = view.findViewById(R.id.grayscaleButton);
+        mColorPickerBlackWhiteOptionButton = view.findViewById(R.id.blackWhiteButton);
     }
 
     @Override
     protected void onAfterViewCreated() {
         Bundle args = getArguments();
         isPassport = args != null && args.getBoolean(ARG_IS_PASSPORT, false);
-        showFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
-        disableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
+        mShowFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
+        mDisableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
+        mColorType = args != null ? args.getInt(ARG_COLOR_TYPE, V_COLOR_TYPE_COLOR) : V_COLOR_TYPE_COLOR;
 
         Resources.Theme theme = getActivity().getTheme();
         TypedValue borderColor = new TypedValue();
         if(theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)){
-            documentBorderColor = borderColor.resourceId > 0? getResources().getColor(borderColor.resourceId) : borderColor.data;
+            mDocumentBorderColor = borderColor.resourceId > 0? getResources().getColor(borderColor.resourceId) : borderColor.data;
         }
 
         TypedValue bodyColor = new TypedValue();
         if(theme.resolveAttribute(android.R.attr.colorPrimaryDark, bodyColor, true)){
-            documentBodyColor = bodyColor.resourceId > 0? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
+            mDocumentBodyColor = bodyColor.resourceId > 0? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
         }
 
-        documentBodyColor = args.getInt(ARG_DOC_BODY_COLOR, documentBodyColor);
-        documentBorderColor = args.getInt(ARG_DOC_BORDER_COLOR, documentBorderColor);
-        torchTintColor = args.getInt(ARG_TORCH_COLOR, torchTintColor);
-        torchTintColorLight = args.getInt(ARG_TORCH_COLOR_LIGHT, torchTintColorLight);
+        mDocumentBodyColor = args.getInt(ARG_DOC_BODY_COLOR, mDocumentBodyColor);
+        mDocumentBorderColor = args.getInt(ARG_DOC_BORDER_COLOR, mDocumentBorderColor);
+        mTorchTintColor = args.getInt(ARG_TORCH_COLOR, mTorchTintColor);
+        mTorchTintColorLight = args.getInt(ARG_TORCH_COLOR_LIGHT, mTorchTintColorLight);
 
         BorderFrameGraphic frameGraphic = new BorderFrameGraphic(mGraphicOverlay, isPassport);
         mFrameSizeProvider = frameGraphic;
         mGraphicOverlay.addFrame(frameGraphic);
 
-        if (showFlash) {
-            flashToggle.setOnClickListener(v -> {
+        if (mShowFlash) {
+            mFlashToggle.setOnClickListener(v -> {
                 if (mCameraSource != null) {
-                    if (mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH)
+                    if (Camera.Parameters.FLASH_MODE_TORCH.equals(mCameraSource.getFlashMode()))
                         mCameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                     else
                         mCameraSource.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
@@ -204,16 +223,65 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 }
             });
         } else {
-            flashToggle.setVisibility(View.GONE);
+            mFlashToggle.setVisibility(View.GONE);
         }
 
-        takePictureButton.setOnClickListener(v -> {
+        mTakePictureButton.setOnClickListener(v -> {
             if (mCameraSource != null)
-                mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), data -> detectDocumentManually(data));
+                mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), this::detectDocumentManually);
         });
 
-        if (disableAutomaticCapture)
-            manualButton.setVisibility(View.GONE);
+        mColorButton.setOnClickListener(v -> {
+            mTopPanel.setVisibility(View.GONE);
+            mCancelButton.setVisibility(View.GONE);
+            mManualButton.setVisibility(View.GONE);
+            mColorPicker.setVisibility(View.VISIBLE);
+            mColorPickerColorOptionButton.setTextColor(mColorType == V_COLOR_TYPE_COLOR ? Color.YELLOW : Color.WHITE);
+            mColorPickerGrayscaleOptionButton.setTextColor(mColorType == V_COLOR_TYPE_GRAYSCALE ? Color.YELLOW : Color.WHITE);
+            mColorPickerBlackWhiteOptionButton.setTextColor(mColorType == V_COLOR_TYPE_BLACK_WHITE ? Color.YELLOW : Color.WHITE);
+        });
+
+        mColorPickerButton.setOnClickListener(v -> {
+            hideColorPicker();
+        });
+
+        mColorPickerColorOptionButton.setOnClickListener(v -> {
+            hideColorPicker();
+            mColorType = V_COLOR_TYPE_COLOR;
+        });
+
+        mColorPickerGrayscaleOptionButton.setOnClickListener(v -> {
+            hideColorPicker();
+            mColorType = V_COLOR_TYPE_GRAYSCALE;
+        });
+
+        mColorPickerBlackWhiteOptionButton.setOnClickListener(v -> {
+            hideColorPicker();
+            mColorType = V_COLOR_TYPE_BLACK_WHITE;
+        });
+
+        if (mDisableAutomaticCapture) {
+            mManualButton.setVisibility(View.GONE);
+        } else {
+            mManualButton.setOnClickListener(v -> {
+                if (mManual)
+                    mManualButton.setText(R.string.automatic);
+                else
+                    mManualButton.setText(R.string.manual);
+                mManual = !mManual;
+            });
+        }
+
+        mCancelButton.setOnClickListener(v -> {
+            getActivity().finish();
+        });
+    }
+
+    private void hideColorPicker() {
+        mTopPanel.setVisibility(View.VISIBLE);
+        mCancelButton.setVisibility(View.VISIBLE);
+        mManualButton.setVisibility(View.VISIBLE);
+        mColorPicker.setVisibility(View.GONE);
     }
 
     @Override
@@ -240,13 +308,13 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     void updateFlashButtonColor(){
         if(mCameraSource != null){
-            int tintColor = torchTintColor;
+            int tintColor = mTorchTintColor;
 
             if(mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH){
-                tintColor = torchTintColorLight;
+                tintColor = mTorchTintColorLight;
             }
 
-            DrawableCompat.setTint(flashToggle.getDrawable(), tintColor);
+            DrawableCompat.setTint(mFlashToggle.getDrawable(), tintColor);
         }
     }
 
@@ -281,8 +349,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         IDDetector.setProcessor(
                 new MultiProcessor.Builder<>(factory).build());*/
         DocumentGraphic graphic = new DocumentGraphic(mGraphicOverlay, null);
-        if(documentBorderColor != -1) graphic.setBorderColor(documentBorderColor);
-        if(documentBodyColor != -1) graphic.setFillColor(documentBodyColor);
+        if(mDocumentBorderColor != -1) graphic.setBorderColor(mDocumentBorderColor);
+        if(mDocumentBodyColor != -1) graphic.setFillColor(mDocumentBodyColor);
 
         DocumentProcessor processor = new DocumentProcessor(IDDetector,
                 new DocumentTracker(mGraphicOverlay, graphic, this));
@@ -294,7 +362,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mCameraSource = new CameraSource.Builder(getActivity().getApplicationContext(), IDDetector)
                 .setFacing(CameraSource.CAMERA_FACING_BACK)
                 .setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)
-                .setFlashMode(showFlash ? Camera.Parameters.FLASH_MODE_AUTO : Camera.Parameters.FLASH_MODE_OFF)
+                .setFlashMode(mShowFlash ? Camera.Parameters.FLASH_MODE_AUTO : Camera.Parameters.FLASH_MODE_OFF)
                 .setRequestedFps(15.0f)
                 .build();
     }
@@ -352,8 +420,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     void processDocument(Document document){
         synchronized (mLock) {
-            saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(),
-                    document.detectedQuad.points);
+            saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mColorType);
             isBusy = true;
         }
     }
@@ -394,7 +461,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     @Override
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
-        if (document != null && !disableAutomaticCapture) {
+        if (document != null && !mDisableAutomaticCapture && !mManual) {
             if (!matchLastQuadPoints(document.detectedQuad.points)) {
                 mDocumentDetected = 0;
             } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {

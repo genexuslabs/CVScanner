@@ -27,6 +27,8 @@ import devliving.online.cvscanner.R;
 import devliving.online.cvscanner.util.CVProcessor;
 import devliving.online.cvscanner.util.Util;
 
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/29/17.
  */
@@ -146,26 +148,9 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
 
     @Override
     protected void onAfterViewCreated() {
-        mRotateRight.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                rotateRight();
-            }
-        });
-
-        mRotateLeft.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                rotateLeft();
-            }
-        });
-
-        mSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                cropAndSave();
-            }
-        });
+        mRotateRight.setOnClickListener(v -> rotateRight());
+        mRotateLeft.setOnClickListener(v -> rotateLeft());
+        mSave.setOnClickListener(v -> cropAndSave());
     }
 
     public void rotateLeft() {
@@ -268,7 +253,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
             }
 
             Point[] sortedPoints = CVProcessor.sortPoints(quadPoints);
-            saveCroppedImage(mBitmap, mRotation, sortedPoints);
+            saveCroppedImage(mBitmap, mRotation, sortedPoints, V_COLOR_TYPE_COLOR);
         }
     }
 

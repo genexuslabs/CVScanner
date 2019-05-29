@@ -26,6 +26,8 @@ import java.io.IOException;
 import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.util.Util;
 
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+
 public class MainActivity extends AppCompatActivity {
 
     final int REQ_SCAN = 11;
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false));
+        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false, V_COLOR_TYPE_COLOR));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
         fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
@@ -65,8 +67,8 @@ public class MainActivity extends AppCompatActivity {
                 .show());
     }
 
-    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture) {
-        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, REQ_SCAN);
+    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType) {
+        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, colorType, REQ_SCAN);
     }
 
     void startCameraIntent(){

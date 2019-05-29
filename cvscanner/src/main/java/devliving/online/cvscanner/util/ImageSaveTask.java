@@ -12,21 +12,28 @@ import org.opencv.core.Size;
 
 import java.io.IOException;
 
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_BLACK_WHITE;
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_GRAYSCALE;
+import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_PHOTO;
+
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/30/17.
  */
 
 public class ImageSaveTask extends AsyncTask<Void, Void, String> {
-    Bitmap image;
-    int rotation;
-    Point[] points;
-    Context mContext;
-    SaveCallback mCallback;
+    private Bitmap image;
+    private int mRotation;
+    private Point[] mPoints;
+    private int mColorType;
+    private Context mContext;
+    private SaveCallback mCallback;
 
-    public ImageSaveTask(Context context, Bitmap image, int rotation, Point[] points, SaveCallback callback) {
+    public ImageSaveTask(Context context, Bitmap image, int rotation, Point[] points, int colorType, SaveCallback callback) {
         this.image = image;
-        this.rotation = rotation;
-        this.points = points;
+        this.mRotation = rotation;
+        this.mPoints = points;
+        this.mColorType = colorType;
         this.mContext = context;
         this.mCallback = callback;
     }
@@ -58,26 +65,37 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
 
         image.recycle();
 
-        Mat croppedImage = CVProcessor.fourPointTransform(imageMat, points);
+        Mat croppedImage = CVProcessor.fourPointTransform(imageMat, mPoints);
         imageMat.release();
 
-/*        Mat enhancedImage = CVProcessor.convertBlackAndWhite(croppedImage);
-        croppedImage.release();
+        Mat enhancedImage;
 
-        Mat enhancedImage = CVProcessor.convertGrayScale(croppedImage);
-        croppedImage.release();
-*/
-        Mat enhancedImage = CVProcessor.adjustBirghtnessAndContrast(croppedImage, 1);
-        croppedImage.release();
-
-        enhancedImage = CVProcessor.sharpenImage(enhancedImage);
+        switch (mColorType) {
+            case V_COLOR_TYPE_COLOR:
+            default:
+                Mat adjustedImage = CVProcessor.adjustBrightnessAndContrast(croppedImage, 1);
+                croppedImage.release();
+                enhancedImage = CVProcessor.sharpenImage(adjustedImage);
+                adjustedImage.release();
+                break;
+            case V_COLOR_TYPE_GRAYSCALE:
+                enhancedImage = CVProcessor.convertGrayscale(croppedImage);
+                croppedImage.release();
+                break;
+            case V_COLOR_TYPE_BLACK_WHITE:
+                enhancedImage = CVProcessor.convertBlackAndWhite(croppedImage);
+                croppedImage.release();
+                break;
+            case V_COLOR_TYPE_PHOTO:
+                enhancedImage = croppedImage;
+        }
 
         String imagePath = null;
         try {
             imagePath = Util.saveImage(mContext,
                     "IMG_CVScanner_" + System.currentTimeMillis(), enhancedImage, false);
             enhancedImage.release();
-            Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), rotation);
+            Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mRotation);
         } catch (IOException e) {
             e.printStackTrace();
         }

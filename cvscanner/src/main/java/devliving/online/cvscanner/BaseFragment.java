@@ -74,20 +74,20 @@ public abstract class BaseFragment extends Fragment implements ImageSaveTask.Sav
     @Override
     public void onSaved(String path) {
         Log.d("BASE", "saved at: " + path);
-        if(mCallback != null) mCallback.onImageProcessed(path);
+        if (mCallback != null)
+            mCallback.onImageProcessed(path);
         isBusy = false;
     }
 
     @Override
     public void onSaveFailed(Exception error) {
-        if(mCallback != null) mCallback.onImageProcessingFailed("Failed to save image", error);
+        if (mCallback != null)
+            mCallback.onImageProcessingFailed("Failed to save image", error);
         isBusy = false;
     }
 
-    protected synchronized void saveCroppedImage(Bitmap bitmap, int rotation, Point[] quadPoints){
-        if(!isBusy){
-            new ImageSaveTask(getContext(), bitmap, rotation, quadPoints, this)
-            .execute();
-        }
+    protected synchronized void saveCroppedImage(Bitmap bitmap, int rotation, Point[] quadPoints, int colorType) {
+        if (!isBusy)
+            new ImageSaveTask(getContext(), bitmap, rotation, quadPoints, colorType, this).execute();
     }
 }

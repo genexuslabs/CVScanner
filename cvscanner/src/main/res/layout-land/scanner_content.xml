@@ -20,6 +20,7 @@
     </online.devliving.mobilevisionpipeline.camera.CameraSourcePreview>
 
     <LinearLayout
+        android:id="@+id/topPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center"
@@ -41,6 +42,56 @@
             android:scaleType="fitXY"
             android:src="@drawable/ic_flash"
             android:layout_marginLeft="200dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/colorPicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="8dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/colorImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_check_circle"
+            android:contentDescription="@string/color"
+            android:layout_marginTop="12dp"/>
+
+        <Button
+            android:id="@+id/colorButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/color"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/grayscaleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/grayscale"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/blackWhiteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/black_and_white"
+            android:layout_marginStart="8dp"/>
 
     </LinearLayout>
 

@@ -3,4 +3,13 @@
     <string name="camera_permission_msg">Permission to access the camera is required.</string>
     <string name="storage_permission_msg">Permission to access sdcard is required to store images.</string>
     <string name="camera_busy">Camera is busy!</string>
+    <string name="done">Done</string>
+    <string name="take_picture">Take Picture</string>
+    <string name="cancel">Cancel</string>
+    <string name="manual">Manual</string>
+    <string name="automatic">Auto.</string>
+    <string name="flash">Flash</string>
+    <string name="color">Color</string>
+    <string name="grayscale">Grayscale</string>
+    <string name="black_and_white">Black and White</string>
 </resources>

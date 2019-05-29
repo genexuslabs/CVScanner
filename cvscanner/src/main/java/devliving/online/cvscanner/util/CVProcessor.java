@@ -725,7 +725,7 @@ public class CVProcessor {
         return doc;
     }
 
-    public static Mat adjustBirghtnessAndContrast(Mat src, double clipPercentage){
+    public static Mat adjustBrightnessAndContrast(Mat src, double clipPercentage) {
         int histSize = 256;
         double alpha, beta;
         double minGray, maxGray;

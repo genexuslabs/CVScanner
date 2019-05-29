@@ -20,6 +20,7 @@
     </online.devliving.mobilevisionpipeline.camera.CameraSourcePreview>
 
     <LinearLayout
+        android:id="@+id/topPanel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|center"
@@ -31,7 +32,8 @@
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
-            android:src="@drawable/ic_check_circle"/>
+            android:src="@drawable/ic_check_circle"
+            android:contentDescription="@string/color" />
 
         <ImageButton
             android:id="@+id/flash"
@@ -40,7 +42,58 @@
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
             android:src="@drawable/ic_flash"
-            android:layout_marginLeft="50dp"/>
+            android:layout_marginStart="50dp"
+            android:contentDescription="@string/flash" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/colorPicker"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="8dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/colorImage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_check_circle"
+            android:contentDescription="@string/color"
+            android:layout_marginTop="12dp"/>
+
+        <Button
+            android:id="@+id/colorButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/color"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/grayscaleButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/grayscale"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/blackWhiteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/black_and_white"
+            android:layout_marginStart="8dp"/>
 
     </LinearLayout>
 
@@ -51,8 +104,8 @@
         android:background="@android:color/transparent"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/white"
-        android:text="Manual"
-        android:layout_gravity="top|right"
+        android:text="@string/automatic"
+        android:layout_gravity="top|end"
         android:layout_margin="8dp"/>
 
     <Button
@@ -62,8 +115,8 @@
         android:background="@android:color/transparent"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/white"
-        android:text="Cancel"
-        android:layout_gravity="top|left"
+        android:text="@string/cancel"
+        android:layout_gravity="top|start"
         android:layout_margin="8dp"/>
 
     <ImageButton
@@ -74,14 +127,15 @@
         android:scaleType="fitXY"
         android:src="@drawable/ic_check_circle"
         android:layout_gravity="bottom|center"
-        android:layout_margin="30dp"/>
+        android:layout_margin="30dp"
+        android:contentDescription="@string/take_picture" />
 
     <View
         android:id="@+id/documents"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:background="@android:color/white"
-        android:layout_gravity="bottom|left"
+        android:layout_gravity="bottom|start"
         android:layout_margin="30dp"
         android:visibility="gone"/>
 
@@ -92,8 +146,8 @@
         android:background="@android:color/transparent"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:textColor="@android:color/white"
-        android:text="Done"
-        android:layout_gravity="bottom|right"
+        android:text="@string/done"
+        android:layout_gravity="bottom|end"
         android:layout_margin="30dp"
         android:visibility="gone"/>
 

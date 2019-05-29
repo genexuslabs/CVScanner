@@ -34,6 +34,7 @@
         android:layout_toRightOf="@+id/item_save"
         android:layout_margin="16dp"
         android:visibility="gone"/>
+
     <ImageButton
         android:layout_weight="1"
         android:background="?attr/selectableItemBackgroundBorderless"
