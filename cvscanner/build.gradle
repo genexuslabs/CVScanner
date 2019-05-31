@@ -36,7 +36,7 @@ dependencies {
     compile "com.android.support:exifinterface:26.1.0"
     compile 'com.google.android.gms:play-services-basement:11.8.0'
     compile 'com.google.android.gms:play-services-vision:11.8.0'
-    compile 'online.devliving:mobilevision-pipeline:1.0.7'
+    compile 'com.genexus:mobilevision-pipeline:1.0.8-SNAPSHOT'
     compile 'org.opencv:OpenCV-Android:3.1.0'
 }
 

@@ -25,6 +25,9 @@ allprojects {
         maven {
             url  "http://dl.bintray.com/steveliles/maven"
         }
+        maven {
+            url 'http://nexus.genexus.com/repository/maven-internal'
+        }
     }
 }
 

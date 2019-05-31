@@ -307,7 +307,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     }
 
     void updateFlashButtonColor(){
-        if(mCameraSource != null){
+        if (mCameraSource != null) {
             int tintColor = mTorchTintColor;
 
             if(mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH){
@@ -326,7 +326,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     @Override
     protected void onOpenCVConnectionFailed() {
-        if(mCallback != null) mCallback.onImageProcessingFailed("Could not load OpenCV", null);
+        if (mCallback != null)
+            mCallback.onImageProcessingFailed("Could not load OpenCV", null);
     }
 
     /**
@@ -398,7 +399,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             mPreview.release();
         }
 
-        if(sound != null) sound.release();
+        if (sound != null)
+            sound.release();
     }
 
     /**
