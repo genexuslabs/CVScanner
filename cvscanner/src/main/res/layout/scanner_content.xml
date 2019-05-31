@@ -21,18 +21,29 @@
 
     <LinearLayout
         android:id="@+id/topPanel"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="top|center"
+        android:layout_gravity="top"
         android:layout_margin="16dp">
 
-        <ImageButton
-            android:id="@+id/color"
+        <Button
+            android:id="@+id/cancel"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:scaleType="fitXY"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/cancel"
+            android:layout_gravity="start" />
+
+        <ImageButton
+            android:id="@+id/filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
             android:src="@drawable/ic_check_circle"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
             android:contentDescription="@string/color" />
 
         <ImageButton
@@ -40,15 +51,25 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
-            android:scaleType="fitXY"
             android:src="@drawable/ic_flash"
-            android:layout_marginStart="50dp"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
             android:contentDescription="@string/flash" />
+
+        <Button
+            android:id="@+id/manual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/automatic"
+            android:layout_gravity="end"/>
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/colorPicker"
+        android:id="@+id/filterPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="top"
@@ -56,17 +77,17 @@
         android:visibility="gone">
 
         <ImageButton
-            android:id="@+id/colorImage"
+            android:id="@+id/filterClose"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
             android:scaleType="fitXY"
             android:src="@drawable/ic_check_circle"
-            android:contentDescription="@string/color"
+            android:contentDescription="@string/close_filters"
             android:layout_marginTop="12dp"/>
 
         <Button
-            android:id="@+id/colorButton"
+            android:id="@+id/color"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
@@ -76,7 +97,7 @@
             android:layout_marginStart="8dp"/>
 
         <Button
-            android:id="@+id/grayscaleButton"
+            android:id="@+id/grayscale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
@@ -86,7 +107,7 @@
             android:layout_marginStart="8dp"/>
 
         <Button
-            android:id="@+id/blackWhiteButton"
+            android:id="@+id/blackWhite"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
@@ -96,28 +117,6 @@
             android:layout_marginStart="8dp"/>
 
     </LinearLayout>
-
-    <Button
-        android:id="@+id/manual"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"
-        android:text="@string/automatic"
-        android:layout_gravity="top|end"
-        android:layout_margin="8dp"/>
-
-    <Button
-        android:id="@+id/cancel"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:textColor="@android:color/white"
-        android:text="@string/cancel"
-        android:layout_gravity="top|start"
-        android:layout_margin="8dp"/>
 
     <ImageButton
         android:id="@+id/takePicture"
@@ -130,7 +129,7 @@
         android:layout_margin="30dp"
         android:contentDescription="@string/take_picture" />
 
-    <View
+    <ImageButton
         android:id="@+id/documents"
         android:layout_width="60dp"
         android:layout_height="60dp"

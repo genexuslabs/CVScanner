@@ -12,10 +12,10 @@ import org.opencv.core.Size;
 
 import java.io.IOException;
 
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_BLACK_WHITE;
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_GRAYSCALE;
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_PHOTO;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/30/17.
@@ -71,22 +71,22 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
         Mat enhancedImage;
 
         switch (mColorType) {
-            case V_COLOR_TYPE_COLOR:
+            case V_FILTER_TYPE_COLOR:
             default:
                 Mat adjustedImage = CVProcessor.adjustBrightnessAndContrast(croppedImage, 1);
                 croppedImage.release();
                 enhancedImage = CVProcessor.sharpenImage(adjustedImage);
                 adjustedImage.release();
                 break;
-            case V_COLOR_TYPE_GRAYSCALE:
+            case V_FILTER_TYPE_GRAYSCALE:
                 enhancedImage = CVProcessor.convertGrayscale(croppedImage);
                 croppedImage.release();
                 break;
-            case V_COLOR_TYPE_BLACK_WHITE:
+            case V_FILTER_TYPE_BLACK_WHITE:
                 enhancedImage = CVProcessor.convertBlackAndWhite(croppedImage);
                 croppedImage.release();
                 break;
-            case V_COLOR_TYPE_PHOTO:
+            case V_FILTER_TYPE_PHOTO:
                 enhancedImage = croppedImage;
         }
 

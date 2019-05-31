@@ -16,7 +16,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
 
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
@@ -26,7 +25,7 @@ import java.io.IOException;
 import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.util.Util;
 
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,7 +56,7 @@ public class MainActivity extends AppCompatActivity {
         list.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false, V_COLOR_TYPE_COLOR));
+        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false, V_FILTER_TYPE_COLOR, false));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
         fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
@@ -67,8 +66,8 @@ public class MainActivity extends AppCompatActivity {
                 .show());
     }
 
-    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType) {
-        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, colorType, REQ_SCAN);
+    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument) {
+        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, REQ_SCAN);
     }
 
     void startCameraIntent(){

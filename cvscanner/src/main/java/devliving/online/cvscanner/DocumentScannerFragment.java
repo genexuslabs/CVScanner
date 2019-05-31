@@ -2,6 +2,7 @@ package devliving.online.cvscanner;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -39,18 +40,20 @@ import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
+import static devliving.online.cvscanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
+
 /**
  * Created by Mehedi on 10/23/16.
  */
 public class DocumentScannerFragment extends BaseFragment implements DocumentTracker.DocumentDetectionListener {
-    public final static int V_COLOR_TYPE_COLOR = 0;
-    public final static int V_COLOR_TYPE_GRAYSCALE = 1;
-    public final static int V_COLOR_TYPE_BLACK_WHITE = 2;
-    public final static int V_COLOR_TYPE_PHOTO = 3;
     private final static String ARG_IS_PASSPORT = "is_passport";
     private final static String ARG_SHOW_FLASH = "show_flash";
     private final static String ARG_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
-    private final static String ARG_COLOR_TYPE = "color_type";
+    private final static String ARG_FILTER_TYPE = "filter_type";
+    private final static String ARG_SINGLE_DOCUMENT = "single_document";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
@@ -65,20 +68,21 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private boolean mShowFlash;
     private ImageButton mFlashToggle;
     private boolean mDisableAutomaticCapture;
-    private int mColorType;
+    private int mFilterType;
+    private boolean mSingleDocument;
 
     private ImageButton mTakePictureButton;
     private Button mCancelButton;
     private Button mManualButton;
     private Button mDoneButton;
-    private ImageButton mColorButton;
-    private View mDocumentsButton;
+    private ImageButton mFiltersButton;
+    private ImageButton mDocumentsButton;
     private View mTopPanel;
-    private View mColorPicker;
-    private ImageButton mColorPickerButton;
-    private Button mColorPickerColorOptionButton;
-    private Button mColorPickerGrayscaleOptionButton;
-    private Button mColorPickerBlackWhiteOptionButton;
+    private View mFiltersPanel;
+    private ImageButton mFiltersCloseButton;
+    private Button mFilterColorButton;
+    private Button mFilterGrayscaleButton;
+    private Button mFilterBlackWhiteButton;
 
     private CameraSource mCameraSource;
     private CameraSourcePreview mPreview;
@@ -99,25 +103,27 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static int AUTO_SCAN_THRESHOLD = 3;
     private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
-        args.putInt(ARG_COLOR_TYPE, colorType);
+        args.putInt(ARG_FILTER_TYPE, filterType);
+        args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int colorType,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument,
                                                       @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
-        args.putInt(ARG_COLOR_TYPE, colorType);
+        args.putInt(ARG_FILTER_TYPE, filterType);
+        args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
         args.putInt(ARG_TORCH_COLOR, torchColor);
@@ -174,14 +180,14 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mCancelButton = view.findViewById(R.id.cancel);
         mManualButton = view.findViewById(R.id.manual);
         mDoneButton = view.findViewById(R.id.done);
-        mColorButton = view.findViewById(R.id.color);
+        mFiltersButton = view.findViewById(R.id.filters);
         mDocumentsButton = view.findViewById(R.id.documents);
         mTopPanel = view.findViewById(R.id.topPanel);
-        mColorPicker = view.findViewById(R.id.colorPicker);
-        mColorPickerButton = view.findViewById(R.id.colorImage);
-        mColorPickerColorOptionButton = view.findViewById(R.id.colorButton);
-        mColorPickerGrayscaleOptionButton = view.findViewById(R.id.grayscaleButton);
-        mColorPickerBlackWhiteOptionButton = view.findViewById(R.id.blackWhiteButton);
+        mFiltersPanel = view.findViewById(R.id.filtersPanel);
+        mFiltersCloseButton = view.findViewById(R.id.filterClose);
+        mFilterColorButton = view.findViewById(R.id.color);
+        mFilterGrayscaleButton = view.findViewById(R.id.grayscale);
+        mFilterBlackWhiteButton = view.findViewById(R.id.blackWhite);
     }
 
     @Override
@@ -190,16 +196,17 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         isPassport = args != null && args.getBoolean(ARG_IS_PASSPORT, false);
         mShowFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
         mDisableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
-        mColorType = args != null ? args.getInt(ARG_COLOR_TYPE, V_COLOR_TYPE_COLOR) : V_COLOR_TYPE_COLOR;
+        mFilterType = args != null ? args.getInt(ARG_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
+        mSingleDocument = args != null && args.getBoolean(ARG_SINGLE_DOCUMENT, true);
 
         Resources.Theme theme = getActivity().getTheme();
         TypedValue borderColor = new TypedValue();
-        if(theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)){
+        if (theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)) {
             mDocumentBorderColor = borderColor.resourceId > 0? getResources().getColor(borderColor.resourceId) : borderColor.data;
         }
 
         TypedValue bodyColor = new TypedValue();
-        if(theme.resolveAttribute(android.R.attr.colorPrimaryDark, bodyColor, true)){
+        if (theme.resolveAttribute(android.R.attr.colorPrimaryDark, bodyColor, true)) {
             mDocumentBodyColor = bodyColor.resourceId > 0? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
         }
 
@@ -231,33 +238,33 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), this::detectDocumentManually);
         });
 
-        mColorButton.setOnClickListener(v -> {
+        mFiltersButton.setOnClickListener(v -> {
             mTopPanel.setVisibility(View.GONE);
             mCancelButton.setVisibility(View.GONE);
             mManualButton.setVisibility(View.GONE);
-            mColorPicker.setVisibility(View.VISIBLE);
-            mColorPickerColorOptionButton.setTextColor(mColorType == V_COLOR_TYPE_COLOR ? Color.YELLOW : Color.WHITE);
-            mColorPickerGrayscaleOptionButton.setTextColor(mColorType == V_COLOR_TYPE_GRAYSCALE ? Color.YELLOW : Color.WHITE);
-            mColorPickerBlackWhiteOptionButton.setTextColor(mColorType == V_COLOR_TYPE_BLACK_WHITE ? Color.YELLOW : Color.WHITE);
+            mFiltersPanel.setVisibility(View.VISIBLE);
+            mFilterColorButton.setTextColor(mFilterType == V_FILTER_TYPE_COLOR ? Color.YELLOW : Color.WHITE);
+            mFilterGrayscaleButton.setTextColor(mFilterType == V_FILTER_TYPE_GRAYSCALE ? Color.YELLOW : Color.WHITE);
+            mFilterBlackWhiteButton.setTextColor(mFilterType == V_FILTER_TYPE_BLACK_WHITE ? Color.YELLOW : Color.WHITE);
         });
 
-        mColorPickerButton.setOnClickListener(v -> {
+        mFiltersCloseButton.setOnClickListener(v -> {
             hideColorPicker();
         });
 
-        mColorPickerColorOptionButton.setOnClickListener(v -> {
+        mFilterColorButton.setOnClickListener(v -> {
             hideColorPicker();
-            mColorType = V_COLOR_TYPE_COLOR;
+            mFilterType = V_FILTER_TYPE_COLOR;
         });
 
-        mColorPickerGrayscaleOptionButton.setOnClickListener(v -> {
+        mFilterGrayscaleButton.setOnClickListener(v -> {
             hideColorPicker();
-            mColorType = V_COLOR_TYPE_GRAYSCALE;
+            mFilterType = V_FILTER_TYPE_GRAYSCALE;
         });
 
-        mColorPickerBlackWhiteOptionButton.setOnClickListener(v -> {
+        mFilterBlackWhiteButton.setOnClickListener(v -> {
             hideColorPicker();
-            mColorType = V_COLOR_TYPE_BLACK_WHITE;
+            mFilterType = V_FILTER_TYPE_BLACK_WHITE;
         });
 
         if (mDisableAutomaticCapture) {
@@ -275,13 +282,25 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mCancelButton.setOnClickListener(v -> {
             getActivity().finish();
         });
+
+        if (!mSingleDocument) {
+            mDocumentsButton.setOnClickListener(v -> {
+                Intent intent = new Intent(getContext(), DocumentBrowserActivity.class);
+                getActivity().startActivityForResult(intent, REQ_DOCUMENT_BROWSE);
+            });
+
+            mDoneButton.setOnClickListener(v -> {
+                if (mCallback != null)
+                    mCallback.onImageProcessed(null);
+            });
+        }
     }
 
     private void hideColorPicker() {
         mTopPanel.setVisibility(View.VISIBLE);
         mCancelButton.setVisibility(View.VISIBLE);
         mManualButton.setVisibility(View.VISIBLE);
-        mColorPicker.setVisibility(View.GONE);
+        mFiltersPanel.setVisibility(View.GONE);
     }
 
     @Override
@@ -422,8 +441,20 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     void processDocument(Document document){
         synchronized (mLock) {
-            saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mColorType);
+            saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mFilterType);
             isBusy = true;
+        }
+    }
+
+    @Override
+    public void onSaved(String path) {
+        if (mSingleDocument)
+            super.onSaved(path);
+        else {
+            Log.d("BASE", "saved at: " + path);
+            isBusy = false;
+            mDocumentsButton.setVisibility(View.VISIBLE);
+            mDoneButton.setVisibility(View.VISIBLE);
         }
     }
 

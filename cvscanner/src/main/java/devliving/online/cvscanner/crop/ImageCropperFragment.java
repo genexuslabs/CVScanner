@@ -27,7 +27,7 @@ import devliving.online.cvscanner.R;
 import devliving.online.cvscanner.util.CVProcessor;
 import devliving.online.cvscanner.util.Util;
 
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/29/17.
@@ -253,7 +253,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
             }
 
             Point[] sortedPoints = CVProcessor.sortPoints(quadPoints);
-            saveCroppedImage(mBitmap, mRotation, sortedPoints, V_COLOR_TYPE_COLOR);
+            saveCroppedImage(mBitmap, mRotation, sortedPoints, V_FILTER_TYPE_COLOR);
         }
     }
 

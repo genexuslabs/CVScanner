@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            android:id="@+id/done"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:onClick="onDoneClick"
+            android:text="@string/done" />
+
+        <Button
+            android:id="@+id/retake"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:onClick="onRetakeClick"
+            android:text="@string/retake" />
+
+        <TextView
+            android:id="@+id/numbers"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+    </FrameLayout>
+
+    <android.support.v4.view.ViewPager
+        android:id="@+id/pager"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:id="@+id/filtersPanel"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/color"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onColorClick"
+            android:contentDescription="@string/color" />
+
+        <ImageButton
+            android:id="@+id/grayscale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onGrayscaleClick"
+            android:contentDescription="@string/grayscale" />
+
+        <ImageButton
+            android:id="@+id/blackWhite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onBlackWhiteClick"
+            android:contentDescription="@string/black_and_white" />
+
+        <ImageButton
+            android:id="@+id/photo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onPhotoClick"
+            android:contentDescription="@string/photo" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <ImageButton
+            android:id="@+id/crop"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onCropClick"
+            android:contentDescription="@string/crop" />
+
+        <ImageButton
+            android:id="@+id/filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onFiltersClick"
+            android:contentDescription="@string/filters" />
+
+        <ImageButton
+            android:id="@+id/rotate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onRotateClick"
+            android:contentDescription="@string/rotate" />
+
+        <ImageButton
+            android:id="@+id/erase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_gravity="end"
+            android:src="@drawable/ic_check_circle"
+            android:onClick="onEraseClick"
+            android:contentDescription="@string/erase" />
+
+    </LinearLayout>
+
+</LinearLayout>

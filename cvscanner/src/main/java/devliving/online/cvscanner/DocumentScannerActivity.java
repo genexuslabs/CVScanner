@@ -20,7 +20,7 @@ import android.widget.Toast;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
-import static devliving.online.cvscanner.DocumentScannerFragment.V_COLOR_TYPE_COLOR;
+import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
 /**
  * Created by Mehedi on 10/15/16.
@@ -42,7 +42,10 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
     public static final String EXTRA_IS_PASSPORT = "is_passport";
     public static final String EXTRA_SHOW_FLASH = "show_flash";
     public static final String EXTRA_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
-    public static final String EXTRA_COLOR_TYPE = "color_type";
+    public static final String EXTRA_FILTER_TYPE = "filter_type";
+    public static final String EXTRA_SINGLE_DOCUMENT = "single_document";
+
+    public static final int REQ_DOCUMENT_BROWSE = 12;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -101,7 +104,8 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
         boolean isScanningPassport = extras != null && getIntent().getBooleanExtra(EXTRA_IS_PASSPORT, false);
         boolean showFlash = extras != null && getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
         boolean disableAutomaticCapture = extras != null && getIntent().getBooleanExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, false);
-        int colorType = extras != null ? getIntent().getIntExtra(EXTRA_COLOR_TYPE, V_COLOR_TYPE_COLOR) : V_COLOR_TYPE_COLOR;
+        int filterType = extras != null ? getIntent().getIntExtra(EXTRA_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
+        boolean singleDocument = extras != null && getIntent().getBooleanExtra(EXTRA_SINGLE_DOCUMENT, false);
 
         DocumentScannerFragment fragment = null;
 
@@ -111,9 +115,9 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
             int torchTintColor = extras.getInt(EXTRA_TORCH_TINT_COLOR, getResources().getColor(R.color.dark_gray));
             int torchTintLightColor = extras.getInt(EXTRA_TORCH_TINT_COLOR_LIGHT, getResources().getColor(R.color.torch_yellow));
 
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, colorType, borderColor, bodyColor, torchTintColor, torchTintLightColor);
+            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
         } else {
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, colorType);
+            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument);
         }
 
         getSupportFragmentManager().beginTransaction()
