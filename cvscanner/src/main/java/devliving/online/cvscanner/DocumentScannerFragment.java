@@ -34,12 +34,14 @@ import com.google.android.gms.vision.Frame;
 import org.opencv.core.Point;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
+import static devliving.online.cvscanner.DocumentBrowserActivity.EXTRA_DATA_LIST;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
@@ -61,6 +63,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     final Object mLock = new Object();
     Context mContext;
+
+    private ArrayList<DocumentData> mDataList;
 
     private int mTorchTintColor = Color.GRAY, mTorchTintColorLight = Color.YELLOW;
     private int mDocumentBorderColor = -1, mDocumentBodyColor = -1;
@@ -286,6 +290,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         if (!mSingleDocument) {
             mDocumentsButton.setOnClickListener(v -> {
                 Intent intent = new Intent(getContext(), DocumentBrowserActivity.class);
+                intent.putParcelableArrayListExtra(EXTRA_DATA_LIST, mDataList);
                 getActivity().startActivityForResult(intent, REQ_DOCUMENT_BROWSE);
             });
 
@@ -439,10 +444,15 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
     }
 
-    void processDocument(Document document){
+    void processDocument(Document document) {
         synchronized (mLock) {
-            saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mFilterType);
-            isBusy = true;
+            DocumentData data = DocumentData.Create(getContext(), document, mFilterType);
+            if (data != null) {
+                if (!mSingleDocument)
+                    addDocument(data);
+                saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mFilterType);
+                isBusy = true;
+            }
         }
     }
 
@@ -453,9 +463,15 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         else {
             Log.d("BASE", "saved at: " + path);
             isBusy = false;
-            mDocumentsButton.setVisibility(View.VISIBLE);
-            mDoneButton.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void addDocument(DocumentData data) {
+        mDocumentsButton.setVisibility(View.VISIBLE);
+        mDoneButton.setVisibility(View.VISIBLE);
+        if (mDataList == null)
+            mDataList = new ArrayList<>();
+        mDataList.add(data);
     }
 
     private boolean matchLastQuadPoints(Point[] points) {
@@ -507,11 +523,11 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
     }
 
-    void detectDocumentManually(final byte[] data){
+    private void detectDocumentManually(final byte[] data) {
         Log.d("Scanner", "detecting document manually");
         new Thread(() -> {
             Bitmap image = BitmapFactory.decodeByteArray(data, 0, data.length);
-            if(image != null){
+            if (image != null) {
                 final SparseArray<Document> docs = IDDetector.detect(new Frame.Builder()
                         .setBitmap(image)
                         .build());
@@ -520,8 +536,12 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                     Log.d("Scanner", "detected document manually");
                     final Document document = docs.get(0);
                     getActivity().runOnUiThread(() -> processDocument(document));
-                } else {
+                } else if (mSingleDocument) {
                     getActivity().finish();
+                } else {
+                    DocumentData documentData = DocumentData.Create(getContext(), image, mFilterType);
+                    if (documentData != null)
+                        addDocument(documentData);
                 }
             }
         }).start();

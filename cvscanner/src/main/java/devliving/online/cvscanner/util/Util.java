@@ -80,15 +80,18 @@ public final class Util {
     }
 
     /**
-     *
-     * @param context
      * @param imageName without extension
-     * @param img
-     * @param useExternalStorage
-     * @return
-     * @throws IOException
      */
     public static String saveImage(Context context, String imageName, @NonNull Mat img, boolean useExternalStorage) throws IOException {
+        Bitmap bitmap = Bitmap.createBitmap((int) img.size().width, (int) img.size().height, Bitmap.Config.ARGB_8888);
+        Utils.matToBitmap(img, bitmap);
+        return saveImage(context, imageName, bitmap, useExternalStorage);
+    }
+
+    /**
+     * @param imageName without extension
+     */
+    public static String saveImage(Context context, String imageName, @NonNull Bitmap bitmap, boolean useExternalStorage) throws IOException {
         String imagePath = null;
 
         File dir = null;
@@ -104,9 +107,6 @@ public final class Util {
         }
 
         File imageFile = File.createTempFile(imageName, ".jpg", dir);
-
-        Bitmap bitmap = Bitmap.createBitmap((int) img.size().width, (int) img.size().height, Bitmap.Config.ARGB_8888);
-        Utils.matToBitmap(img, bitmap);
 
         FileOutputStream fout = null;
         try {

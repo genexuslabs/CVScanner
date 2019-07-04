@@ -37,7 +37,7 @@ public class DocumentBrowserActivity extends FragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.browser_content);
 
-        ArrayList<DocumentData> dataList = (ArrayList<DocumentData>)getIntent().getSerializableExtra(EXTRA_DATA_LIST);
+        ArrayList<DocumentData> dataList = getIntent().getParcelableArrayListExtra(EXTRA_DATA_LIST);
 
         final TextView numbersTextView = findViewById(R.id.numbers);
         mFiltersPanel = findViewById(R.id.filtersPanel);
@@ -61,7 +61,7 @@ public class DocumentBrowserActivity extends FragmentActivity {
     }
 
     private static class ImagesPagerAdapter extends FragmentStatePagerAdapter {
-        ArrayList<DocumentData> mDataList;
+        private ArrayList<DocumentData> mDataList;
 
         public ImagesPagerAdapter(FragmentManager fm, ArrayList<DocumentData> dataList) {
             super(fm);

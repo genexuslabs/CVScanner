@@ -12,6 +12,9 @@ import org.opencv.core.Size;
 
 import java.io.IOException;
 
+import devliving.online.cvscanner.Document;
+import devliving.online.cvscanner.DocumentData;
+
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
@@ -22,18 +25,12 @@ import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
  */
 
 public class ImageSaveTask extends AsyncTask<Void, Void, String> {
-    private Bitmap image;
-    private int mRotation;
-    private Point[] mPoints;
-    private int mColorType;
+    private DocumentData mData;
     private Context mContext;
     private SaveCallback mCallback;
 
-    public ImageSaveTask(Context context, Bitmap image, int rotation, Point[] points, int colorType, SaveCallback callback) {
-        this.image = image;
-        this.mRotation = rotation;
-        this.mPoints = points;
-        this.mColorType = colorType;
+    public ImageSaveTask(Context context, DocumentData data, SaveCallback callback) {
+        this.mData = data;
         this.mContext = context;
         this.mCallback = callback;
     }
@@ -59,18 +56,18 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
      */
     @Override
     protected String doInBackground(Void... params) {
+        Bitmap image = mData.useImage();
         Size imageSize = new Size(image.getWidth(), image.getHeight());
         Mat imageMat = new Mat(imageSize, CvType.CV_8UC4);
         Utils.bitmapToMat(image, imageMat);
-
         image.recycle();
 
-        Mat croppedImage = CVProcessor.fourPointTransform(imageMat, mPoints);
+        Mat croppedImage = CVProcessor.fourPointTransform(imageMat, mData.getPoints());
         imageMat.release();
 
         Mat enhancedImage;
 
-        switch (mColorType) {
+        switch (mData.getFilterType()) {
             case V_FILTER_TYPE_COLOR:
             default:
                 Mat adjustedImage = CVProcessor.adjustBrightnessAndContrast(croppedImage, 1);
@@ -95,7 +92,8 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
             imagePath = Util.saveImage(mContext,
                     "IMG_CVScanner_" + System.currentTimeMillis(), enhancedImage, false);
             enhancedImage.release();
-            Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mRotation);
+            Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mData.getRotation());
+            mData.setImagePath(imagePath);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -105,11 +103,13 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPostExecute(String path) {
-        if(path!= null) mCallback.onSaved(path);
-        else mCallback.onSaveFailed(new Exception("could not save image"));
+        if (path != null)
+            mCallback.onSaved(path);
+        else
+            mCallback.onSaveFailed(new Exception("could not save image"));
     }
 
-    public interface SaveCallback{
+    public interface SaveCallback {
         void onSaveTaskStarted();
         void onSaved(String savedPath);
         void onSaveFailed(Exception error);
