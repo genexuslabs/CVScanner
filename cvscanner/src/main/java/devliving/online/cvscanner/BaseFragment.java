@@ -3,10 +3,10 @@ package devliving.online.cvscanner;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.View;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
 
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;

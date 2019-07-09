@@ -14,7 +14,7 @@ import java.util.List;
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 1/25/17.
  */
 
-public class Line{
+public class Line {
     final float INIFINITE_SLOPE = Float.MAX_VALUE;
     final float THRESHOLD = 0.1f;
 

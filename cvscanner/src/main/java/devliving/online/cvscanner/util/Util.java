@@ -6,8 +6,9 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.opengl.GLES10;
 import android.os.Environment;
-import android.support.annotation.NonNull;
-import android.support.media.ExifInterface;
+import androidx.annotation.NonNull;
+import androidx.exifinterface.media.ExifInterface;
+
 import android.util.Log;
 
 import org.opencv.android.Utils;
