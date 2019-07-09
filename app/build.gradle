@@ -6,7 +6,7 @@ android {
 
     defaultConfig {
         applicationId "devliving.online.cvscannersample"
-        minSdkVersion 21
+        minSdkVersion 19
         targetSdkVersion 28
         versionCode 3
         versionName "1.0.2"
@@ -29,6 +29,6 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.0.2'
     implementation 'com.google.android.material:material:1.1.0-alpha07'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
-    implementation 'com.quickbirdstudios:opencv:4.1.0'
+    implementation 'com.genexus:opencv:4.1.0-SNAPSHOT'
     implementation project(':cvscanner')
 }
