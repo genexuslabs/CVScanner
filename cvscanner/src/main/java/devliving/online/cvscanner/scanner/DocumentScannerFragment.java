@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -36,16 +36,21 @@ import org.opencv.core.Point;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import devliving.online.cvscanner.BaseFragment;
+import devliving.online.cvscanner.Document;
+import devliving.online.cvscanner.browser.DocumentBrowserActivity;
+import devliving.online.cvscanner.DocumentData;
+import devliving.online.cvscanner.R;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
-import static devliving.online.cvscanner.DocumentBrowserActivity.EXTRA_DATA_LIST;
+import static devliving.online.cvscanner.browser.DocumentBrowserActivity.EXTRA_DATA_LIST;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
-import static devliving.online.cvscanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
 
 /**
  * Created by Mehedi on 10/23/16.
@@ -450,7 +455,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             if (data != null) {
                 if (!mSingleDocument)
                     addDocument(data);
-                saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, mFilterType);
+                saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.getDetectedQuad().points, mFilterType);
                 isBusy = true;
             }
         }
@@ -511,7 +516,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
         if (document != null && !mDisableAutomaticCapture && !mManual) {
-            if (!matchLastQuadPoints(document.detectedQuad.points)) {
+            if (!matchLastQuadPoints(document.getDetectedQuad().points)) {
                 mDocumentDetected = 0;
             } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
                 getActivity().runOnUiThread(() -> {
@@ -541,7 +546,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 } else {
                     DocumentData documentData = DocumentData.Create(getContext(), image, mFilterType);
                     if (documentData != null)
-                        addDocument(documentData);
+                        getActivity().runOnUiThread(() -> addDocument(documentData));
                 }
             }
         }).start();

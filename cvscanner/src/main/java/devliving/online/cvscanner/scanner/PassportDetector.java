@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.graphics.Bitmap;
 import android.os.Environment;
@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
 
+import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.util.CVProcessor;
 import online.devliving.mobilevisionpipeline.Util;
 

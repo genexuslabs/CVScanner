@@ -27,13 +27,14 @@ import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 
 import devliving.online.cvscanner.CVScanner;
+import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 
 /**
  * The activity can crop specific region of interest from an image.
  */
 public class CropImageActivity extends AppCompatActivity implements CVScanner.ImageProcessorCallback {
-    public static final String EXTRA_IMAGE_URI = "input_image_uri";
+    public static final String EXTRA_DATA = "input_data";
 
     public final static String EXTRA_ROTATE_LEFT_IMAGE_RES = "rotateLeft_imageRes";
     public final static String EXTRA_SAVE_IMAGE_RES = "save_imageRes";
@@ -73,24 +74,22 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
     }
 
     void addCropperFragment(){
-        Uri imageUri = null;
+        DocumentData data = null;
         Bundle extras = getIntent().getExtras();
-        if(extras != null){
-            imageUri = Uri.parse(extras.getString(EXTRA_IMAGE_URI));
-        }
+        if (extras != null)
+            data = extras.getParcelable(EXTRA_DATA);
 
-        if(imageUri == null) {
+        if (data == null) {
             setResult(RESULT_CANCELED);
             finish();
-        }
-        else {
+        } else {
             int rtlImageResId = extras.getInt(EXTRA_ROTATE_LEFT_IMAGE_RES, R.drawable.ic_rotate_left);
             int rtrImageResId = extras.getInt(EXTRA_ROTATE_RIGHT_IMAGE_RES, R.drawable.ic_rotate_right);
             int saveImageResId = extras.getInt(EXTRA_SAVE_IMAGE_RES, R.drawable.ic_check_circle);
             int rtColorResId = extras.getInt(EXTRA_ROTATE_BTN_COLOR_RES, R.color.colorPrimary);
             int saveColorResId = extras.getInt(EXTRA_SAVE_BTN_COLOR_RES, R.color.colorAccent);
 
-            Fragment fragment = ImageCropperFragment.instantiate(imageUri, saveColorResId, rtColorResId, rtlImageResId,
+            Fragment fragment = ImageCropperFragment.instantiate(data, saveColorResId, rtColorResId, rtlImageResId,
                     rtrImageResId, saveImageResId);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
@@ -119,4 +118,3 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
         setResultAndExit(path);
     }
 }
-

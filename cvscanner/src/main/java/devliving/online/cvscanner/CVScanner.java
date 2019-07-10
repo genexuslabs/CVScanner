@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import java.io.IOException;
 
 import devliving.online.cvscanner.crop.CropImageActivity;
+import devliving.online.cvscanner.scanner.DocumentScannerActivity;
 import devliving.online.cvscanner.util.Util;
 
 /**
@@ -80,19 +81,25 @@ public final class CVScanner {
         activity.startActivityForResult(i, reqCode);
     }
 
-    public static void startManualCropper(Activity activity, Uri inputImageUri, int reqCode){
+    public static void startManualCropper(Activity activity, Uri imageUri, int reqCode) {
+        DocumentData data = DocumentData.Create(activity, imageUri);
         Intent intent = new Intent(activity, CropImageActivity.class);
-
-        intent.putExtra(CropImageActivity.EXTRA_IMAGE_URI, inputImageUri.toString());
+        intent.putExtra(CropImageActivity.EXTRA_DATA, data);
         activity.startActivityForResult(intent, reqCode);
     }
 
-    public  static void startManualCropper(Activity activity, Uri imageUri, int reqCode, @ColorRes int buttonTint,
+    public static void startManualCropper(Activity activity, DocumentData data, int reqCode) {
+        Intent intent = new Intent(activity, CropImageActivity.class);
+        intent.putExtra(CropImageActivity.EXTRA_DATA, data);
+        activity.startActivityForResult(intent, reqCode);
+    }
+
+    public  static void startManualCropper(Activity activity, DocumentData data, int reqCode, @ColorRes int buttonTint,
                                            @ColorRes int buttonTintSecondary, @DrawableRes int rotateLeftIconRes,
                                            @DrawableRes int rotateRightIconRes, @DrawableRes int saveButtonIconRes){
         Intent intent = new Intent(activity, CropImageActivity.class);
 
-        intent.putExtra(CropImageActivity.EXTRA_IMAGE_URI, imageUri.toString());
+        intent.putExtra(CropImageActivity.EXTRA_DATA, data);
         intent.putExtra(CropImageActivity.EXTRA_ROTATE_BTN_COLOR_RES, buttonTintSecondary);
         intent.putExtra(CropImageActivity.EXTRA_ROTATE_LEFT_IMAGE_RES, rotateLeftIconRes);
         intent.putExtra(CropImageActivity.EXTRA_ROTATE_RIGHT_IMAGE_RES, rotateRightIconRes);

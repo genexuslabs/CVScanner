@@ -95,17 +95,15 @@ public final class Util {
     public static String saveImage(Context context, String imageName, @NonNull Bitmap bitmap, boolean useExternalStorage) throws IOException {
         String imagePath = null;
 
-        File dir = null;
-        if(useExternalStorage){
+        File dir;
+        if (useExternalStorage){
             dir = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES);
-        }
-        else {
+        } else {
             dir = new File(context.getCacheDir(), "/CVScanner/");
         }
 
-        if (!dir.exists()) {
+        if (!dir.exists())
             dir.mkdirs();
-        }
 
         File imageFile = File.createTempFile(imageName, ".jpg", dir);
 
@@ -243,7 +241,7 @@ public final class Util {
                 default:
                     return ExifInterface.ORIENTATION_UNDEFINED;
             }
-        }finally {
+        } finally {
             closeSilently(inputStream);
         }
     }

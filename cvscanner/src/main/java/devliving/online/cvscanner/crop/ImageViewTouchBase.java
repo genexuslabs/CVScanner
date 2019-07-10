@@ -139,7 +139,6 @@ public abstract class ImageViewTouchBase extends androidx.appcompat.widget.AppCo
                 setImageDrawable(transitionDrawable);
                 transitionDrawable.startTransition(TRANSITION_DURATION);
             }
-
         } else {
             BitmapDrawable layers[] = new BitmapDrawable[]{new BitmapDrawable(getResources(), bitmap)};
             TransitionDrawable transitionDrawable = new TransitionDrawable(layers);

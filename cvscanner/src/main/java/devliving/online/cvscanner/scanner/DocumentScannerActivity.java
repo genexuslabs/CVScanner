@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.Manifest;
 import android.app.Activity;
@@ -19,6 +19,9 @@ import androidx.core.app.ActivityCompat;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
+
+import devliving.online.cvscanner.CVScanner;
+import devliving.online.cvscanner.R;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
@@ -208,7 +211,6 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
         Intent data = getIntent();
         data.putExtra(CVScanner.RESULT_IMAGE_PATH, path);
         setResult(RESULT_OK, data);
-
         finish();
     }
 

@@ -1,10 +1,12 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.util.SparseArray;
 
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.FocusingProcessor;
 import com.google.android.gms.vision.Tracker;
+
+import devliving.online.cvscanner.Document;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/16/17.

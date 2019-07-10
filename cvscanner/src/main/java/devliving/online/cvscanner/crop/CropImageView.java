@@ -109,7 +109,6 @@ public class CropImageView extends ImageViewTouchBase {
 
         float[] mappedPoint = mapPointToImageSpace(event.getX(), event.getY());
 
-
         switch (event.getAction()) {
             case MotionEvent.ACTION_DOWN:
                 int edge = mCropHighlightView.getHit(mappedPoint[0], mappedPoint[1], getScale());
@@ -150,7 +149,7 @@ public class CropImageView extends ImageViewTouchBase {
 
     @Override
     public void onZoomFinished() {
-        if(mCropHighlightView != null){
+        if (mCropHighlightView != null){
             ensureVisible(mCropHighlightView);
         }
     }
@@ -206,7 +205,6 @@ public class CropImageView extends ImageViewTouchBase {
             mCropHighlightView.draw(canvas);
         }
     }
-
 
     public void add(HighLightView hv) {
         mCropHighlightView = hv;

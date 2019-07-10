@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -7,6 +7,8 @@ import android.graphics.Path;
 import android.graphics.drawable.shapes.PathShape;
 import android.util.Log;
 
+import devliving.online.cvscanner.Document;
+import devliving.online.cvscanner.util.CVProcessor;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 
 /**
@@ -75,7 +77,7 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
     public void draw(Canvas canvas) {
         //TODO fix the coordinates see http://zhengrui.github.io/android-coordinates.html
 
-        if(scannedDoc != null && scannedDoc.detectedQuad != null){
+        if(scannedDoc != null && scannedDoc.getDetectedQuad() != null){
             //boolean isPortrait = Util.isPortraitMode(mOverlay.getContext());
             Path path = new Path();
 
@@ -108,10 +110,11 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
             */
             int frameWidth = scannedDoc.getImage().getMetadata().getHeight();
 
-            path.moveTo(((float)(frameWidth - scannedDoc.detectedQuad.points[0].y)), ((float)scannedDoc.detectedQuad.points[0].x));
-            path.lineTo(((float)(frameWidth - scannedDoc.detectedQuad.points[1].y)), ((float)scannedDoc.detectedQuad.points[1].x));
-            path.lineTo(((float)(frameWidth - scannedDoc.detectedQuad.points[2].y)), ((float)scannedDoc.detectedQuad.points[2].x));
-            path.lineTo(((float)(frameWidth - scannedDoc.detectedQuad.points[3].y)), ((float)scannedDoc.detectedQuad.points[3].x));
+            CVProcessor.Quadrilateral detectedQuad = scannedDoc.getDetectedQuad();
+            path.moveTo(((float)(frameWidth - detectedQuad.points[0].y)), ((float)detectedQuad.points[0].x));
+            path.lineTo(((float)(frameWidth - detectedQuad.points[1].y)), ((float)detectedQuad.points[1].x));
+            path.lineTo(((float)(frameWidth - detectedQuad.points[2].y)), ((float)detectedQuad.points[2].x));
+            path.lineTo(((float)(frameWidth - detectedQuad.points[3].y)), ((float)detectedQuad.points[3].x));
             path.close();
 
             PathShape shape = new PathShape(path, scannedDoc.getImage().getMetadata().getHeight(), scannedDoc.getImage().getMetadata().getWidth());

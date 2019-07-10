@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import android.content.Context;
 import android.util.Log;
@@ -15,6 +15,7 @@ import org.opencv.core.Size;
 
 import java.util.List;
 
+import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.util.CVProcessor;
 
 /**

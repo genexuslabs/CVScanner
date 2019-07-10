@@ -93,7 +93,7 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
                     "IMG_CVScanner_" + System.currentTimeMillis(), enhancedImage, false);
             enhancedImage.release();
             Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mData.getRotation());
-            mData.setImagePath(imagePath);
+            mData.setImageUri(Util.getUriFromPath(imagePath));
         } catch (IOException e) {
             e.printStackTrace();
         }

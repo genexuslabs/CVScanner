@@ -1,4 +1,4 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.browser;
 
 import android.content.Intent;
 import android.net.Uri;
@@ -18,7 +18,10 @@ import androidx.viewpager.widget.ViewPager;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import devliving.online.cvscanner.crop.CropImageActivity;
+import devliving.online.cvscanner.CVScanner;
+import devliving.online.cvscanner.DocumentData;
+import devliving.online.cvscanner.R;
+import devliving.online.cvscanner.scanner.DocumentScannerActivity;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
@@ -32,10 +35,12 @@ public class DocumentBrowserActivity extends FragmentActivity {
 
     public static String EXTRA_DATA_LIST = "document_data_list";
 
+    public static final int REQ_CROP_IMAGE = 13;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.browser_content);
+        setContentView(R.layout.browser_activity);
 
         ArrayList<DocumentData> dataList = getIntent().getParcelableArrayListExtra(EXTRA_DATA_LIST);
 
@@ -51,13 +56,16 @@ public class DocumentBrowserActivity extends FragmentActivity {
 
             @Override
             public void onPageSelected(int position) {
-                String text = String.format(Locale.US, "%d of %d", position, mImagesAdapter.getCount());
+                String text = String.format(Locale.US, "%d of %d", position + 1, mImagesAdapter.getCount());
                 numbersTextView.setText(text);
             }
 
             @Override
             public void onPageScrollStateChanged(int state) { }
         });
+
+        String text = String.format(Locale.US, "1 of %d", mImagesAdapter.getCount());
+        numbersTextView.setText(text);
     }
 
     private static class ImagesPagerAdapter extends FragmentStatePagerAdapter {
@@ -70,12 +78,16 @@ public class DocumentBrowserActivity extends FragmentActivity {
 
         @Override
         public Fragment getItem(int position) {
-            return ImageFragment.instantiate(mDataList.get(position).getImagePath());
+            return ImageFragment.instantiate(mDataList.get(position).getImageUri());
         }
 
         @Override
         public int getCount() {
             return mDataList.size();
+        }
+
+        DocumentData getData(int position) {
+            return mDataList.get(position);
         }
 
         void setFilterType(int position, int filterType) {
@@ -85,7 +97,7 @@ public class DocumentBrowserActivity extends FragmentActivity {
 
         void rotate(int position) {
             DocumentData data = mDataList.get(position);
-            data.setRotation(data.getRotation() + 1);
+            data.rotate(1);
             notifyDataSetChanged();
         }
 
@@ -98,19 +110,19 @@ public class DocumentBrowserActivity extends FragmentActivity {
     public static class ImageFragment extends Fragment {
         private final static String ARG_IMAGE_PATH = "image_path";
 
-        public static Fragment instantiate(String imagePath) {
+        public static Fragment instantiate(Uri imageUri) {
             Fragment fragment = new ImageFragment();
             Bundle args = new Bundle();
-            args.putString(ARG_IMAGE_PATH, imagePath);
+            args.putString(ARG_IMAGE_PATH, imageUri.toString());
             fragment.setArguments(args);
             return fragment;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            String imagePath = getArguments().getString(ARG_IMAGE_PATH);
+            String imageUri = getArguments().getString(ARG_IMAGE_PATH);
             ImageView imageView = new ImageView(getContext());
-            imageView.setImageURI(Uri.parse(imagePath));
+            imageView.setImageURI(Uri.parse(imageUri));
             return imageView;
         }
     }
@@ -152,8 +164,8 @@ public class DocumentBrowserActivity extends FragmentActivity {
     }
 
     public void onCropClick(View v) {
-        Intent intent = new Intent(getApplicationContext(), CropImageActivity.class);
-        startActivity(intent);
+        DocumentData data = mImagesAdapter.getData(mPager.getCurrentItem());
+        CVScanner.startManualCropper(this, data, REQ_CROP_IMAGE);
     }
 
     public void onRotateClick(View v) {

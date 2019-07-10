@@ -1,8 +1,9 @@
-package devliving.online.cvscanner;
+package devliving.online.cvscanner.scanner;
 
 import com.google.android.gms.vision.MultiProcessor;
 import com.google.android.gms.vision.Tracker;
 
+import devliving.online.cvscanner.Document;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 
 /**
