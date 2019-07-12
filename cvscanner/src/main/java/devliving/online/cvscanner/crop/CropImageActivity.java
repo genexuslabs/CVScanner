@@ -17,7 +17,6 @@
 package devliving.online.cvscanner.crop;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -26,26 +25,31 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.appcompat.app.AppCompatActivity;
 
-import devliving.online.cvscanner.CVScanner;
+import java.util.ArrayList;
+
+import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 
 /**
  * The activity can crop specific region of interest from an image.
  */
-public class CropImageActivity extends AppCompatActivity implements CVScanner.ImageProcessorCallback {
+public class CropImageActivity extends AppCompatActivity implements BaseFragment.ImageProcessorCallback {
     public static final String EXTRA_DATA = "input_data";
 
-    public final static String EXTRA_ROTATE_LEFT_IMAGE_RES = "rotateLeft_imageRes";
-    public final static String EXTRA_SAVE_IMAGE_RES = "save_imageRes";
-    public final static String EXTRA_ROTATE_RIGHT_IMAGE_RES = "rotateRight_imageRes";
+    public static final String EXTRA_ROTATE_LEFT_IMAGE_RES = "rotateLeft_imageRes";
+    public static final String EXTRA_SAVE_IMAGE_RES = "save_imageRes";
+    public static final String EXTRA_ROTATE_RIGHT_IMAGE_RES = "rotateRight_imageRes";
 
-    public final static String EXTRA_SAVE_BTN_COLOR_RES = "save_imageColorRes";
-    public final static String EXTRA_ROTATE_BTN_COLOR_RES = "rotate_imageColorRes";
+    public static final String EXTRA_SAVE_BTN_COLOR_RES = "save_imageColorRes";
+    public static final String EXTRA_ROTATE_BTN_COLOR_RES = "rotate_imageColorRes";
+
+    public static final String RESULT_DATA = "output_data";
 
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -57,9 +61,8 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        if(getSupportActionBar() != null){
+        if (getSupportActionBar() != null)
             getSupportActionBar().hide();
-        }
 
         setContentView(R.layout.scanner_activity);
     }
@@ -68,12 +71,11 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
     protected void onResume() {
         super.onResume();
 
-        if(getSupportFragmentManager().getFragments() == null || getSupportFragmentManager().getFragments().size() == 0){
+        if (getSupportFragmentManager().getFragments() == null || getSupportFragmentManager().getFragments().size() == 0)
             addCropperFragment();
-        }
     }
 
-    void addCropperFragment(){
+    private void addCropperFragment(){
         DocumentData data = null;
         Bundle extras = getIntent().getExtras();
         if (extras != null)
@@ -89,19 +91,17 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
             int rtColorResId = extras.getInt(EXTRA_ROTATE_BTN_COLOR_RES, R.color.colorPrimary);
             int saveColorResId = extras.getInt(EXTRA_SAVE_BTN_COLOR_RES, R.color.colorAccent);
 
-            Fragment fragment = ImageCropperFragment.instantiate(data, saveColorResId, rtColorResId, rtlImageResId,
-                    rtrImageResId, saveImageResId);
+            Fragment fragment = ImageCropperFragment.instantiate(data, saveColorResId, rtColorResId, rtlImageResId, rtrImageResId, saveImageResId);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, fragment)
                     .commitAllowingStateLoss();
         }
     }
 
-    void setResultAndExit(String imagePath){
+    void setResultAndExit(DocumentData documentData) {
         Intent data = getIntent();
-        data.putExtra(CVScanner.RESULT_IMAGE_PATH, imagePath);
+        data.putExtra(RESULT_DATA, documentData);
         setResult(RESULT_OK, data);
-
         finish();
     }
 
@@ -113,8 +113,8 @@ public class CropImageActivity extends AppCompatActivity implements CVScanner.Im
     }
 
     @Override
-    public void onImageProcessed(String path) {
+    public void onImagesProcessed(ArrayList<DocumentData> dataList) {
         Log.d("CROP-ACTIVITY", "image processed");
-        setResultAndExit(path);
+        setResultAndExit(dataList.get(0));
     }
 }

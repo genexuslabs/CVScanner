@@ -20,12 +20,7 @@ import devliving.online.cvscanner.util.Util;
  */
 
 public final class CVScanner {
-    public interface ImageProcessorCallback{
-        void onImageProcessingFailed(String reason, @Nullable Exception error);
-        void onImageProcessed(String imagePath);
-    }
-
-    public static String RESULT_IMAGE_PATH = "result_image_path";
+    public static String RESULT_IMAGES_PATH = "result_images_path";
 
     public static String getFileproviderName(Context context){
         return context.getPackageName() + ".cvscanner.fileprovider";
@@ -89,9 +84,6 @@ public final class CVScanner {
     }
 
     public static void startManualCropper(Activity activity, DocumentData data, int reqCode) {
-        Intent intent = new Intent(activity, CropImageActivity.class);
-        intent.putExtra(CropImageActivity.EXTRA_DATA, data);
-        activity.startActivityForResult(intent, reqCode);
     }
 
     public  static void startManualCropper(Activity activity, DocumentData data, int reqCode, @ColorRes int buttonTint,

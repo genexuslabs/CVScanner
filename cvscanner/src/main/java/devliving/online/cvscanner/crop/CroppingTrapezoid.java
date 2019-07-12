@@ -50,6 +50,11 @@ public class CroppingTrapezoid {
         mPoints[7] = cropRect.bottom;
     }
 
+    public CroppingTrapezoid(float[] cropPoints, Rect imageRect) {
+        mImageRect = new Rect(imageRect);
+        if (cropPoints.length == 8)
+            System.arraycopy(cropPoints, 0, mPoints, 0, 8);
+    }
 
     public Rect getBoundingRect() {
         return getBoundingRect(mPoints);
@@ -181,7 +186,6 @@ public class CroppingTrapezoid {
 //        dx = capDx(dx, boundingRect);
 //        dy = capDy(dy, boundingRect);
 
-
         if ((GROW_LEFT_EDGE | GROW_TOP_EDGE) == edge) {
             mPoints[0] += dx;
             mPoints[1] += dy;
@@ -230,7 +234,6 @@ public class CroppingTrapezoid {
             mPoints[6] += dx;
             mPoints[7] += dy;
         }
-
 
         capPoints(edge);
     }
@@ -354,8 +357,6 @@ public class CroppingTrapezoid {
             mPoints[7] = Math.max(mPoints[7], topBound);
             mPoints[5] = Math.max(mPoints[5], topBound);
         }
-
-
     }
 
     private double calculateDistanceToLine(float x1, float y1, float x2, float y2, float x, float y) {
@@ -414,4 +415,17 @@ public class CroppingTrapezoid {
         return (y1 - y2) / (x1 - x2);
     }
 
+    public void rotate(int delta) {
+        if (delta == 1) {
+            // rotate right
+            float aux1 = mPoints[0];
+            float aux2 = mPoints[1];
+            for (int i = 0; i < 6; i++)
+                mPoints[i] = mPoints[i + 2];
+            mPoints[6] = aux1;
+            mPoints[7] = aux2;
+        } else if (delta == -1) {
+            // rotate left
+        }
+    }
 }

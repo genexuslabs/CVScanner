@@ -5,6 +5,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
@@ -12,6 +14,8 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Point;
+
+import java.util.ArrayList;
 
 import devliving.online.cvscanner.util.ImageSaveTask;
 
@@ -21,11 +25,17 @@ import devliving.online.cvscanner.util.ImageSaveTask;
 
 public abstract class BaseFragment extends Fragment implements ImageSaveTask.SaveCallback {
 
-    protected boolean isBusy = false;
-    protected CVScanner.ImageProcessorCallback mCallback = null;
+    public interface ImageProcessorCallback {
+        void onImageProcessingFailed(String reason, @Nullable Exception error);
+        void onImagesProcessed(ArrayList<DocumentData> dataList);
+    }
+
+    private ImageProcessorCallback mCallback = null;
+    protected boolean mIsBusy = false;
+    protected ArrayList<DocumentData> mDataList;
 
     protected void loadOpenCV(){
-        if(!OpenCVLoader.initDebug()){
+        if (!OpenCVLoader.initDebug()){
             //OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, getActivity().getApplicationContext(), mLoaderCallback);
         }
         else{
@@ -34,23 +44,25 @@ public abstract class BaseFragment extends Fragment implements ImageSaveTask.Sav
     }
 
     protected abstract void onOpenCVConnected();
-    protected abstract void onOpenCVConnectionFailed();
     protected abstract void onAfterViewCreated();
+
+    private void onOpenCVConnectionFailed() {
+        if (mCallback != null)
+            mCallback.onImageProcessingFailed("Could not load OpenCV", null);
+    }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(getActivity()) {
         @Override
         public void onManagerConnected(int status) {
-            if(status == LoaderCallbackInterface.SUCCESS){
+            if (status == LoaderCallbackInterface.SUCCESS)
                 onOpenCVConnected();
-            }
-            else{
+            else
                 onOpenCVConnectionFailed();
-            }
         }
     };
 
     @Override
-    public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         onAfterViewCreated();
@@ -61,29 +73,31 @@ public abstract class BaseFragment extends Fragment implements ImageSaveTask.Sav
     public void onAttach(Context context) {
         super.onAttach(context);
 
-        if(context instanceof CVScanner.ImageProcessorCallback){
-            mCallback = (CVScanner.ImageProcessorCallback) context;
-        }
+        if (context instanceof ImageProcessorCallback)
+            mCallback = (ImageProcessorCallback) context;
     }
 
     @Override
     public void onSaveTaskStarted() {
-        isBusy = true;
+        mIsBusy = true;
     }
 
     @Override
     public void onSaved(String path) {
         Log.d("BASE", "saved at: " + path);
-        if (mCallback != null)
-            mCallback.onImageProcessed(path);
-        isBusy = false;
+        mIsBusy = false;
     }
 
     @Override
     public void onSaveFailed(Exception error) {
         if (mCallback != null)
             mCallback.onImageProcessingFailed("Failed to save image", error);
-        isBusy = false;
+        mIsBusy = false;
+    }
+
+    protected void done() {
+        if (mCallback != null)
+            mCallback.onImagesProcessed(mDataList);
     }
 
     protected void saveCroppedImage(Bitmap bitmap, int rotation, Point[] quadPoints, int filterType) {
@@ -92,7 +106,7 @@ public abstract class BaseFragment extends Fragment implements ImageSaveTask.Sav
     }
 
     protected synchronized void saveCroppedImage(DocumentData data) {
-        if (!isBusy) {
+        if (!mIsBusy) {
             new ImageSaveTask(getContext(), data, this).execute();
         }
     }

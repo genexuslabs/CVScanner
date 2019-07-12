@@ -20,7 +20,11 @@ import androidx.core.app.ActivityCompat;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 
+import java.util.ArrayList;
+
+import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.CVScanner;
+import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
@@ -28,7 +32,7 @@ import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 /**
  * Created by Mehedi on 10/15/16.
  */
-public class DocumentScannerActivity extends AppCompatActivity implements CVScanner.ImageProcessorCallback {
+public class DocumentScannerActivity extends AppCompatActivity implements BaseFragment.ImageProcessorCallback {
     private static final String TAG = "ID-reader";
 
     // intent request code to handle updating play services if needed.
@@ -53,6 +57,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
     @Override
     public void onCreate(Bundle icicle) {
         super.onCreate(icicle);
+
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN |
                 WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
@@ -64,9 +69,9 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
                         | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                         | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-        if(getSupportActionBar() != null){
+        if (getSupportActionBar() != null)
             getSupportActionBar().hide();
-        }
+
         setContentView(R.layout.scanner_activity);
     }
 
@@ -74,35 +79,30 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
     protected void onResume() {
         super.onResume();
 
-        if(getSupportFragmentManager().getFragments() == null || getSupportFragmentManager().getFragments().size() == 0){
+        if (getSupportFragmentManager().getFragments() == null || getSupportFragmentManager().getFragments().size() == 0)
             checkCameraPermission();
-        }
     }
 
-    void checkCameraPermission(){
-        int rc = ActivityCompat.checkSelfPermission(DocumentScannerActivity.this, Manifest.permission.CAMERA);
-        if (rc == PackageManager.PERMISSION_GRANTED) {
+    private void checkCameraPermission(){
+        int rc = ActivityCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        if (rc == PackageManager.PERMISSION_GRANTED)
             checkPlayServices();
-        } else {
+        else
             requestCameraPermission();
-        }
     }
 
-    void checkPlayServices(){
+    private void checkPlayServices(){
         // check that the device has play services available.
-        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
-                getApplicationContext());
+        int code = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(getApplicationContext());
         if (code != ConnectionResult.SUCCESS) {
-            Dialog dlg =
-                    GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
+            Dialog dlg = GoogleApiAvailability.getInstance().getErrorDialog(this, code, RC_HANDLE_GMS);
             dlg.show();
-        }
-        else{
+        } else {
             addScannerFragment();
         }
     }
 
-    void addScannerFragment() {
+    private void addScannerFragment() {
         Bundle extras = getIntent().getExtras();
         boolean isScanningPassport = extras != null && getIntent().getBooleanExtra(EXTRA_IS_PASSPORT, false);
         boolean showFlash = extras != null && getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
@@ -207,16 +207,14 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
                 .show();
     }
 
-    void setResultAndExit(String path){
+    private void setResultAndExit(ArrayList<DocumentData> dataList) {
+        String[] list = new String[dataList.size()];
+        for (int i = 0; i < list.length; i++)
+            list[i] = dataList.get(i).getImageUri().toString();
         Intent data = getIntent();
-        data.putExtra(CVScanner.RESULT_IMAGE_PATH, path);
+        data.putExtra(CVScanner.RESULT_IMAGES_PATH, list);
         setResult(RESULT_OK, data);
         finish();
-    }
-
-    @Override
-    public void onImageProcessed(String imagePath) {
-        setResultAndExit(imagePath);
     }
 
     @Override
@@ -224,5 +222,10 @@ public class DocumentScannerActivity extends AppCompatActivity implements CVScan
         Toast.makeText(this, "Scanner failed: " + reason, Toast.LENGTH_SHORT).show();
         setResult(RESULT_CANCELED);
         finish();
+    }
+
+    @Override
+    public void onImagesProcessed(ArrayList<DocumentData> dataList) {
+        setResultAndExit(dataList);
     }
 }

@@ -24,6 +24,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
 import androidx.annotation.ColorRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.DrawableCompat;
 import androidx.fragment.app.FragmentTransaction;
@@ -66,10 +67,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
     private final static String ARG_DOC_BODY_COLOR = "doc_body_color";
 
-    final Object mLock = new Object();
-    Context mContext;
-
-    private ArrayList<DocumentData> mDataList;
+    private final Object mLock = new Object();
 
     private int mTorchTintColor = Color.GRAY, mTorchTintColorLight = Color.YELLOW;
     private int mDocumentBorderColor = -1, mDocumentBodyColor = -1;
@@ -173,7 +171,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.scanner_content, container, false);
 
         initializeViews(view);
@@ -181,7 +179,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         return view;
     }
 
-    void initializeViews(View view){
+    private void initializeViews(View view) {
         mPreview = view.findViewById(R.id.preview);
         mGraphicOverlay = view.findViewById(R.id.graphicOverlay);
         mFlashToggle = view.findViewById(R.id.flash);
@@ -300,8 +298,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             });
 
             mDoneButton.setOnClickListener(v -> {
-                if (mCallback != null)
-                    mCallback.onImageProcessed(null);
+                done();
             });
         }
     }
@@ -319,9 +316,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             try {
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     ft.setReorderingAllowed(false);
-                }
                 ft.detach(this).attach(this).commit();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -329,19 +325,12 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
     }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        mContext = context.getApplicationContext();
-    }
-
-    void updateFlashButtonColor(){
+    private void updateFlashButtonColor(){
         if (mCameraSource != null) {
             int tintColor = mTorchTintColor;
 
-            if(mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH){
+            if (mCameraSource.getFlashMode() == Camera.Parameters.FLASH_MODE_TORCH)
                 tintColor = mTorchTintColorLight;
-            }
 
             DrawableCompat.setTint(mFlashToggle.getDrawable(), tintColor);
         }
@@ -351,12 +340,6 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     protected void onOpenCVConnected() {
         createCameraSource();
         startCameraSource();
-    }
-
-    @Override
-    protected void onOpenCVConnectionFailed() {
-        if (mCallback != null)
-            mCallback.onImageProcessingFailed("Could not load OpenCV", null);
     }
 
     /**
@@ -449,26 +432,23 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
     }
 
-    void processDocument(Document document) {
+    private void processDocument(Document document) {
         synchronized (mLock) {
             DocumentData data = DocumentData.Create(getContext(), document, mFilterType);
             if (data != null) {
                 if (!mSingleDocument)
                     addDocument(data);
                 saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.getDetectedQuad().points, mFilterType);
-                isBusy = true;
+                mIsBusy = true;
             }
         }
     }
 
     @Override
     public void onSaved(String path) {
+        super.onSaved(path);
         if (mSingleDocument)
-            super.onSaved(path);
-        else {
-            Log.d("BASE", "saved at: " + path);
-            isBusy = false;
-        }
+            done();
     }
 
     private void addDocument(DocumentData data) {

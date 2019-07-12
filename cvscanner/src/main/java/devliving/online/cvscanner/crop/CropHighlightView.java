@@ -63,8 +63,17 @@ class CropHighlightView implements HighLightView {
     private final int mCropEdgeHandleRadius;
     private final float mHysteresis;
 
+    public CropHighlightView(ImageView ctx, Rect imageRect, float[] cropPoints) {
+        this(ctx, new CroppingTrapezoid(cropPoints, imageRect));
+        Log.i(LOG_TAG, "image = " + imageRect.toString() + " crop by points");
+    }
 
     public CropHighlightView(ImageView ctx, Rect imageRect, RectF cropRect) {
+        this(ctx, new CroppingTrapezoid(cropRect, imageRect));
+        Log.i(LOG_TAG, "image = " + imageRect.toString() + " crop = " + cropRect.toString());
+    }
+
+    private CropHighlightView(ImageView ctx, CroppingTrapezoid trapezoid) {
         mContext = ctx;
         final int progressColor = mContext.getResources().getColor(R.color.box_border);
         mCropCornerHandleRadius = mContext.getResources().getDimensionPixelSize(R.dimen.crop_handle_corner_radius);
@@ -72,8 +81,7 @@ class CropHighlightView implements HighLightView {
         mHysteresis = mContext.getResources().getDimensionPixelSize(R.dimen.crop_hit_hysteresis);
         final int edgeWidth = mContext.getResources().getDimensionPixelSize(R.dimen.crop_edge_width);
         mMatrix = new Matrix(ctx.getImageMatrix());
-        Log.i(LOG_TAG, "image = " + imageRect.toString() + " crop = " + cropRect.toString());
-        mTrapezoid = new CroppingTrapezoid(cropRect, imageRect);
+        mTrapezoid = trapezoid;
 
         mDrawRect = computeLayout();
 
@@ -86,7 +94,6 @@ class CropHighlightView implements HighLightView {
         mOutlinePaint.setAntiAlias(true);
     }
 
-
     public void setFocus(boolean f) {
         mIsFocused = f;
     }
@@ -98,7 +105,11 @@ class CropHighlightView implements HighLightView {
         }
         mDrawRect = computeLayout();
         drawEdges(canvas);
+    }
 
+    @Override
+    public void rotate(int delta) {
+        mTrapezoid.rotate(delta);
     }
 
     private void drawEdges(Canvas canvas) {
@@ -152,10 +163,7 @@ class CropHighlightView implements HighLightView {
         x = (p[0] + p[6]) / 2;
         y = (p[1] + p[7]) / 2;
         canvas.drawCircle(x, y, mCropEdgeHandleRadius, mOutlinePaint);
-
-
     }
-
 
     // Determines which edges are hit by touching at (x, y).
     public int getHit(float x, float y, float scale) {
@@ -163,7 +171,6 @@ class CropHighlightView implements HighLightView {
         final float hysteresis = mHysteresis / scale;
         return mTrapezoid.getHit(x, y, hysteresis);
     }
-
 
     // Handles motion (dx, dy) in screen space.
     // The "edge" parameter specifies which edges the user is dragging.

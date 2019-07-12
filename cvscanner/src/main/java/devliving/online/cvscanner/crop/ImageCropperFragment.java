@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
-import android.widget.Toast;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.Nullable;
@@ -31,7 +30,6 @@ import devliving.online.cvscanner.util.Util;
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/29/17.
  */
-
 public class ImageCropperFragment extends BaseFragment implements CropImageView.CropImageViewHost {
     public interface ImageLoadingCallback {
         void onImageLoaded();
@@ -136,13 +134,6 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
     }
 
     @Override
-    protected void onOpenCVConnectionFailed() {
-        Toast.makeText(getContext(), "OpenCV failed to load", Toast.LENGTH_SHORT).show();
-        if(mCallback != null) mCallback.onImageProcessingFailed("OpenCV failed to load", null);
-        else getActivity().finish();
-    }
-
-    @Override
     protected void onAfterViewCreated() {
         mRotateRight.setOnClickListener(v -> rotateRight());
         mRotateLeft.setOnClickListener(v -> rotateLeft());
@@ -160,8 +151,8 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
     private void rotate(int delta) {
         if (mBitmap != null) {
             mData.rotate(delta);
+            mCrop.rotate(delta);
             mImageView.setImageBitmapResetBase(mBitmap, false, mData.getRotation() * 90);
-            showDefaultCroppingRectangle(mBitmap.getWidth(), mBitmap.getHeight());
         }
     }
 
@@ -184,7 +175,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
                 if (mBitmap != null){
                     mImageView.setImageBitmapResetBase(mBitmap, true, mData.getRotation() * 90);
                     adjustButtons();
-                    showDefaultCroppingRectangle(mBitmap.getWidth(), mBitmap.getHeight());
+                    showCropping(mBitmap.getWidth(), mBitmap.getHeight());
 
                     if (mImageLoadingCallback != null)
                         mImageLoadingCallback.onImageLoaded();
@@ -212,18 +203,31 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         }
     }
 
-    private void showDefaultCroppingRectangle(int imageWidth, int imageHeight) {
+    private void showCropping(int imageWidth, int imageHeight) {
         Rect imageRect = new Rect(0, 0, imageWidth, imageHeight);
 
-        // make the default size about 4/5 of the width or height
-        int cropWidth = Math.min(imageWidth, imageHeight) * 4 / 5;
+        CropHighlightView hv;
 
-        int x = (imageWidth - cropWidth) / 2;
-        int y = (imageHeight - cropWidth) / 2;
+        if (mData.getPoints().length != 4) {
+            // make the default size about 4/5 of the width or height
+            int cropWidth = Math.min(imageWidth, imageHeight) * 4 / 5;
 
-        RectF cropRect = new RectF(x, y, x + cropWidth, y + cropWidth);
+            int x = (imageWidth - cropWidth) / 2;
+            int y = (imageHeight - cropWidth) / 2;
 
-        CropHighlightView hv = new CropHighlightView(mImageView, imageRect, cropRect);
+            RectF cropRect = new RectF(x, y, x + cropWidth, y + cropWidth);
+
+            hv = new CropHighlightView(mImageView, imageRect, cropRect);
+        } else {
+            float[] cropPoints = new float[8];
+            Point[] quadPoints = mData.getPoints();
+            for (int i = 0, j = 0; i < 8; i++, j++) {
+                cropPoints[i] = (float)quadPoints[j].x;
+                cropPoints[++i] = (float)quadPoints[j].y;
+            }
+
+            hv = new CropHighlightView(mImageView, imageRect, cropPoints);
+        }
 
         mImageView.resetMaxZoom();
         mImageView.add(hv);
@@ -233,7 +237,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
     }
 
     public void cropAndSave() {
-        if (mBitmap != null && !isBusy) {
+        if (mBitmap != null && !mIsBusy) {
             float[] points = mCrop.getTrapezoid();
             Point[] quadPoints = new Point[4];
 
@@ -266,6 +270,6 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
 
     @Override
     public boolean isBusy() {
-        return isBusy;
+        return mIsBusy;
     }
 }

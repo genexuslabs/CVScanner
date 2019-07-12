@@ -1,16 +1,12 @@
 package devliving.online.cvscannersample;
 
-import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -20,80 +16,35 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.getbase.floatingactionbutton.FloatingActionButton;
 
 import java.io.File;
-import java.io.IOException;
 
 import devliving.online.cvscanner.CVScanner;
-import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.util.Util;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
-import static java.security.AccessController.getContext;
 
 public class MainActivity extends AppCompatActivity {
 
-    final int REQ_SCAN = 11;
+    private final int REQ_SCAN = 11;
 
-    private static final int REQUEST_TAKE_PHOTO = 121;
-    private static final int REQUEST_PICK_PHOTO = 123;
-    private static final int REQ_CROP_IMAGE = 122;
-    private static final int REQ_PERMISSIONS = 120;
-
-    Uri currentPhotoUri = null;
-
-    RecyclerView list;
+    RecyclerView mList;
     ImageAdapter mAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        list = (RecyclerView) findViewById(R.id.image_list);
-
-        list.setLayoutManager(new LinearLayoutManager(this));
+        mList = findViewById(R.id.image_list);
+        mList.setLayoutManager(new LinearLayoutManager(this));
 
         mAdapter = new ImageAdapter();
-        list.setAdapter(mAdapter);
+        mList.setAdapter(mAdapter);
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
-        fabScan.setOnClickListener(view -> startScannerIntent(false, true, false, V_FILTER_TYPE_COLOR, false));
-
-        FloatingActionButton fabCrop = findViewById(R.id.action_crop);
-        fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
-                .setMessage("Choose photo to crop")
-                .setPositiveButton("With Camera", (dialog, which) -> startCameraIntent())
-                .setNeutralButton("From Device", (dialog, which) -> startImagePickerIntent())
-                .show());
-    }
-
-    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument) {
-        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, REQ_SCAN);
-    }
-
-    void startCameraIntent(){
-        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.M ||
-                checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-            try {
-                currentPhotoUri = CVScanner.startCameraIntent(this, REQUEST_TAKE_PHOTO);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-        else{
-            requestPermissions(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQ_PERMISSIONS);
-        }
-    }
-
-    void startImagePickerIntent(){
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("image/*");
-        startActivityForResult(Intent.createChooser(intent, "Pick an image"), REQUEST_PICK_PHOTO);
-    }
-
-    void startImageCropIntent(){
-        CVScanner.startManualCropper(this, currentPhotoUri, REQ_CROP_IMAGE);
+        fabScan.setOnClickListener(view ->
+                CVScanner.startScanner(this, false, true, false, V_FILTER_TYPE_COLOR, false, REQ_SCAN));
     }
 
     @Override
@@ -139,44 +90,16 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MAIN", "got activity result, code: " + requestCode + ", result: " + (resultCode == RESULT_OK));
 
-        if(resultCode == RESULT_OK){
-            switch (requestCode){
-                case REQ_SCAN:
-                case REQ_CROP_IMAGE:
-                    Log.d("MAIN", "got intent data");
-                    if(data != null && data.getExtras() != null){
-                        String path = data.getStringExtra(CVScanner.RESULT_IMAGE_PATH);
-                        File file = new File(path);
-                        Uri imageUri = Util.getUriForFile(this, file);
-                        if(imageUri != null) mAdapter.add(imageUri);
-                        Log.d("MAIN", "added: " + imageUri);
-                    }
-                    break;
-                case REQUEST_TAKE_PHOTO:
-                    startImageCropIntent();
-                    break;
-
-                case REQUEST_PICK_PHOTO:
-                    if(data.getData() != null){
-                        currentPhotoUri = data.getData();
-                        startImageCropIntent();
-                    }
-                    break;
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case REQ_PERMISSIONS: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    startCameraIntent();
+        if(resultCode == RESULT_OK && requestCode == REQ_SCAN) {
+            Log.d("MAIN", "got intent data");
+            if (data != null && data.getExtras() != null) {
+                String[] pathList = data.getStringArrayExtra(CVScanner.RESULT_IMAGES_PATH);
+                for (String s : pathList) {
+                    File file = new File(s);
+                    Uri imageUri = Util.getUriForFile(this, file);
+                    if (imageUri != null)
+                        mAdapter.add(imageUri);
+                    Log.d("MAIN", "added: " + imageUri);
                 }
             }
         }

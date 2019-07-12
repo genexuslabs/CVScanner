@@ -26,7 +26,7 @@ import android.view.MotionEvent;
  * Created by renard on 13/11/14.
  */
 public class CropImageView extends ImageViewTouchBase {
-    public interface CropImageViewHost{
+    public interface CropImageViewHost {
         boolean isBusy();
     }
 

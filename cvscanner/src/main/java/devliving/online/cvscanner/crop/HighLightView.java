@@ -15,14 +15,12 @@ public interface HighLightView {
     int GROW_BOTTOM_EDGE = (1 << 4);
     int MOVE = (1 << 5);
 
-
     /**
      * @return Matrix that converts between image and screen space.
      */
     Matrix getMatrix();
 
     /**
-     *
      * @return Drawing rect in screen space.
      */
     Rect getDrawRect();
@@ -37,10 +35,11 @@ public interface HighLightView {
      */
     float centerX();
 
-
     int getHit(float x, float y, float scale);
 
     void handleMotion(int motionEdge, float dx, float dy);
 
     void draw(Canvas canvas);
+
+    void rotate(int delta);
 }
