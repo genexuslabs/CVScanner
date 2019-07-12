@@ -111,8 +111,14 @@ public class DocumentData implements Parcelable {
         dest.writeString(mImageUri != null ? mImageUri.toString() : "");
     }
 
-    public Bitmap useImage() {
-        return mOriginalImage;
+    public Bitmap useOriginalImage() {
+        Bitmap image = mOriginalImage;
+        mOriginalImage = null; // 1 time use, it can be recycled after use
+        return image;
+    }
+
+    public void setOriginalImage(Bitmap image) {
+        mOriginalImage = image;
     }
 
     public int getRotation() {

@@ -56,7 +56,7 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
      */
     @Override
     protected String doInBackground(Void... params) {
-        Bitmap image = mData.useImage();
+        Bitmap image = mData.useOriginalImage();
         Size imageSize = new Size(image.getWidth(), image.getHeight());
         Mat imageMat = new Mat(imageSize, CvType.CV_8UC4);
         Utils.bitmapToMat(image, imageMat);

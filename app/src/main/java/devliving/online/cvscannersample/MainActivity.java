@@ -90,7 +90,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d("MAIN", "got activity result, code: " + requestCode + ", result: " + (resultCode == RESULT_OK));
 
-        if(resultCode == RESULT_OK && requestCode == REQ_SCAN) {
+        if (resultCode == RESULT_OK && requestCode == REQ_SCAN) {
             Log.d("MAIN", "got intent data");
             if (data != null && data.getExtras() != null) {
                 String[] pathList = data.getStringArrayExtra(CVScanner.RESULT_IMAGES_PATH);

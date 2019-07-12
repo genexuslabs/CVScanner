@@ -531,4 +531,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             }
         }).start();
     }
+
+    public void setDataList(ArrayList<DocumentData> dataList) {
+        mDataList = dataList;
+    }
 }

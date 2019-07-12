@@ -14,12 +14,14 @@ import android.view.ViewTreeObserver;
 import android.widget.ImageButton;
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.graphics.drawable.DrawableCompat;
 
 import org.opencv.core.Point;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.DocumentData;
@@ -36,26 +38,26 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         void onFailedToLoadImage(Exception error);
     }
 
-    final static String ARG_DATA = "data";
-    final static String ARG_RT_LEFT_IMAGE_RES = "rotateLeft_imageRes";
-    final static String ARG_SAVE_IMAGE_RES = "save_imageRes";
-    final static String ARG_RT_RIGHT_IMAGE_RES = "rotateRight_imageRes";
+    private static final String ARG_DATA = "data";
+    private static final String ARG_RT_LEFT_IMAGE_RES = "rotateLeft_imageRes";
+    private static final String ARG_SAVE_IMAGE_RES = "save_imageRes";
+    private static final String ARG_RT_RIGHT_IMAGE_RES = "rotateRight_imageRes";
 
-    final static String ARG_SAVE_IMAGE_COLOR_RES = "save_imageColorRes";
-    final static String ARG_RT_IMAGE_COLOR_RES = "rotate_imageColorRes";
+    private static final String ARG_SAVE_IMAGE_COLOR_RES = "save_imageColorRes";
+    private static final String ARG_RT_IMAGE_COLOR_RES = "rotate_imageColorRes";
 
-    protected CropImageView mImageView;
-    protected ImageButton mRotateLeft;
-    protected ImageButton mRotateRight;
-    protected ImageButton mSave;
+    private CropImageView mImageView;
+    private ImageButton mRotateLeft;
+    private ImageButton mRotateRight;
+    private ImageButton mSave;
 
-    protected CropHighlightView mCrop;
+    private CropHighlightView mCrop;
 
-    protected int mScaleFactor = 1;
-    protected Bitmap mBitmap;
-    protected DocumentData mData = null;
+    private int mScaleFactor = 1;
+    private Bitmap mBitmap;
+    private DocumentData mData = null;
 
-    protected ImageLoadingCallback mImageLoadingCallback = null;
+    private ImageLoadingCallback mImageLoadingCallback = null;
 
     public static ImageCropperFragment instantiate(DocumentData data){
         ImageCropperFragment fragment = new ImageCropperFragment();
@@ -92,7 +94,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
 
     @Nullable
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.imagecropper_content, container, false);
 
         initializeViews(view);
@@ -109,8 +111,10 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         mImageView.setHost(this);
 
         Bundle extras = getArguments();
-        if (extras.containsKey(ARG_DATA))
-            mData = extras.getParcelable(ARG_DATA);
+        assert extras != null;
+        mData = extras.getParcelable(ARG_DATA);
+        mDataList = new ArrayList<>();
+        mDataList.add(mData);
 
         int buttonTintColor = getResources().getColor(extras.getInt(ARG_SAVE_IMAGE_COLOR_RES, R.color.colorAccent));
         int secondaryBtnTintColor = getResources().getColor(extras.getInt(ARG_RT_IMAGE_COLOR_RES, R.color.colorPrimary));
@@ -140,11 +144,11 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         mSave.setOnClickListener(v -> cropAndSave());
     }
 
-    public void rotateLeft() {
+    private void rotateLeft() {
         rotate(-1);
     }
 
-    public void rotateRight() {
+    private void rotateRight() {
         rotate(1);
     }
 
@@ -236,7 +240,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         mImageView.invalidate();
     }
 
-    public void cropAndSave() {
+    private void cropAndSave() {
         if (mBitmap != null && !mIsBusy) {
             float[] points = mCrop.getTrapezoid();
             Point[] quadPoints = new Point[4];
@@ -246,11 +250,12 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
 
             Point[] sortedPoints = CVProcessor.sortPoints(quadPoints);
             mData.setPoints(sortedPoints);
+            mData.setOriginalImage(mBitmap);
             saveCroppedImage(mData);
         }
     }
 
-    protected void clearImages(){
+    private void clearImages() {
         if (mBitmap != null && !mBitmap.isRecycled())
             mBitmap.recycle();
         mImageView.clear();
@@ -260,6 +265,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
     public void onSaved(String path) {
         super.onSaved(path);
         clearImages();
+        done();
     }
 
     @Override

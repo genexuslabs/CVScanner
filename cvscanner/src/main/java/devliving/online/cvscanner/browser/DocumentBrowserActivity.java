@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 
 import java.util.ArrayList;
@@ -13,10 +12,15 @@ import java.util.ArrayList;
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
+import devliving.online.cvscanner.crop.CropImageActivity;
 
 public class DocumentBrowserActivity extends FragmentActivity implements BaseFragment.ImageProcessorCallback {
     public static String EXTRA_DATA_LIST = "document_data_list";
     public static String RESULT_DATA_LIST = "result_data_list";
+
+    public static final int REQ_CROP_IMAGE = 13;
+
+    private DocumentBrowserFragment mFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -38,10 +42,20 @@ public class DocumentBrowserActivity extends FragmentActivity implements BaseFra
             setResult(RESULT_CANCELED);
             finish();
         } else {
-            Fragment fragment = DocumentBrowserFragment.instantiate(dataList);
+            mFragment = DocumentBrowserFragment.instantiate(dataList);
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, fragment)
+                    .add(R.id.container, mFragment)
                     .commitAllowingStateLoss();
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == REQ_CROP_IMAGE) {
+            DocumentData documentData = data.getParcelableExtra(CropImageActivity.RESULT_DATA);
+            mFragment.loadCurrentData(documentData);
         }
     }
 

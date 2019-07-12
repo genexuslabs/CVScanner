@@ -26,6 +26,7 @@ import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
+import devliving.online.cvscanner.browser.DocumentBrowserActivity;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
@@ -53,6 +54,8 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
     public static final String EXTRA_SINGLE_DOCUMENT = "single_document";
 
     public static final int REQ_DOCUMENT_BROWSE = 12;
+
+    private DocumentScannerFragment mFragment;
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -110,23 +113,32 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
         int filterType = extras != null ? getIntent().getIntExtra(EXTRA_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
         boolean singleDocument = extras != null && getIntent().getBooleanExtra(EXTRA_SINGLE_DOCUMENT, false);
 
-        DocumentScannerFragment fragment = null;
-
         if (extras != null) {
             int borderColor = extras.getInt(EXTRA_DOCUMENT_BORDER_COLOR, -1);
             int bodyColor = extras.getInt(EXTRA_DOCUMENT_BODY_COLOR, -1);
             int torchTintColor = extras.getInt(EXTRA_TORCH_TINT_COLOR, getResources().getColor(R.color.dark_gray));
             int torchTintLightColor = extras.getInt(EXTRA_TORCH_TINT_COLOR_LIGHT, getResources().getColor(R.color.torch_yellow));
 
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
         } else {
-            fragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument);
         }
 
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.container, fragment)
+                .add(R.id.container, mFragment)
                 .commitAllowingStateLoss();
     }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode == RESULT_OK && requestCode == REQ_DOCUMENT_BROWSE) {
+            ArrayList<DocumentData> dataList = data.getParcelableArrayListExtra(DocumentBrowserActivity.RESULT_DATA_LIST);
+            mFragment.setDataList(dataList);
+        }
+    }
+
 
     /**
      * Handles the requesting of the camera permission.  This includes

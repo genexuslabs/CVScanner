@@ -29,6 +29,7 @@ import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
+import static devliving.online.cvscanner.browser.DocumentBrowserActivity.REQ_CROP_IMAGE;
 
 public class DocumentBrowserFragment extends BaseFragment {
     private TextView mNumbersTextView;
@@ -37,8 +38,6 @@ public class DocumentBrowserFragment extends BaseFragment {
     private ImagesPagerAdapter mImagesAdapter;
 
     private static String ARG_DATA_LIST = "document_data_list";
-
-    public static final int REQ_CROP_IMAGE = 13;
 
     public static DocumentBrowserFragment instantiate(ArrayList<DocumentData> dataList) {
         DocumentBrowserFragment fragment = new DocumentBrowserFragment();
@@ -68,8 +67,18 @@ public class DocumentBrowserFragment extends BaseFragment {
         mPager = view.findViewById(R.id.pager);
 
         Bundle extras = getArguments();
-        if (extras.containsKey(ARG_DATA_LIST))
-            mDataList = extras.getParcelableArrayList(ARG_DATA_LIST);
+        mDataList = extras.getParcelableArrayList(ARG_DATA_LIST);
+
+        view.findViewById(R.id.done).setOnClickListener(this::onDoneClick);
+        view.findViewById(R.id.retake).setOnClickListener(this::onRetakeClick);
+        view.findViewById(R.id.crop).setOnClickListener(this::onCropClick);
+        view.findViewById(R.id.filters).setOnClickListener(this::onFiltersClick);
+        view.findViewById(R.id.rotate).setOnClickListener(this::onRotateClick);
+        view.findViewById(R.id.erase).setOnClickListener(this::onEraseClick);
+        view.findViewById(R.id.color).setOnClickListener(this::onColorClick);
+        view.findViewById(R.id.grayscale).setOnClickListener(this::onGrayscaleClick);
+        view.findViewById(R.id.blackWhite).setOnClickListener(this::onBlackWhiteClick);
+        view.findViewById(R.id.photo).setOnClickListener(this::onPhotoClick);
     }
 
     @Override
@@ -92,6 +101,11 @@ public class DocumentBrowserFragment extends BaseFragment {
 
         String text = String.format(Locale.US, "1 of %d", mImagesAdapter.getCount());
         mNumbersTextView.setText(text);
+    }
+
+    public void loadCurrentData(DocumentData data) {
+        mDataList.set(mPager.getCurrentItem(), data);
+        mPager.invalidate();
     }
 
     private static class ImagesPagerAdapter extends FragmentStatePagerAdapter {
@@ -136,7 +150,7 @@ public class DocumentBrowserFragment extends BaseFragment {
     public static class ImageFragment extends Fragment {
         private final static String ARG_IMAGE_PATH = "image_path";
 
-        public static Fragment instantiate(Uri imageUri) {
+        static Fragment instantiate(Uri imageUri) {
             Fragment fragment = new ImageFragment();
             Bundle args = new Bundle();
             args.putString(ARG_IMAGE_PATH, imageUri.toString());
@@ -145,7 +159,7 @@ public class DocumentBrowserFragment extends BaseFragment {
         }
 
         @Override
-        public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
             String imageUri = getArguments().getString(ARG_IMAGE_PATH);
             ImageView imageView = new ImageView(getContext());
             imageView.setImageURI(Uri.parse(imageUri));
@@ -189,7 +203,7 @@ public class DocumentBrowserFragment extends BaseFragment {
             mFiltersPanel.setVisibility(View.GONE);
     }
 
-    public void onCropClick(View v) {
+    private void onCropClick(View v) {
         DocumentData data = mImagesAdapter.getData(mPager.getCurrentItem());
         Intent intent = new Intent(getContext(), CropImageActivity.class);
         intent.putExtra(CropImageActivity.EXTRA_DATA, data);
