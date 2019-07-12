@@ -36,6 +36,7 @@ import org.opencv.core.Point;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Objects;
 
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.Document;
@@ -206,7 +207,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mFilterType = args != null ? args.getInt(ARG_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
         mSingleDocument = args != null && args.getBoolean(ARG_SINGLE_DOCUMENT, true);
 
-        Resources.Theme theme = getActivity().getTheme();
+        Resources.Theme theme = Objects.requireNonNull(getActivity()).getTheme();
         TypedValue borderColor = new TypedValue();
         if (theme.resolveAttribute(android.R.attr.colorPrimary, borderColor, true)) {
             mDocumentBorderColor = borderColor.resourceId > 0? getResources().getColor(borderColor.resourceId) : borderColor.data;
@@ -217,6 +218,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             mDocumentBodyColor = bodyColor.resourceId > 0? getResources().getColor(bodyColor.resourceId) : bodyColor.data;
         }
 
+        assert args != null;
         mDocumentBodyColor = args.getInt(ARG_DOC_BODY_COLOR, mDocumentBodyColor);
         mDocumentBorderColor = args.getInt(ARG_DOC_BORDER_COLOR, mDocumentBorderColor);
         mTorchTintColor = args.getInt(ARG_TORCH_COLOR, mTorchTintColor);
@@ -315,6 +317,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         super.onConfigurationChanged(newConfig);
         if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
             try {
+                assert getFragmentManager() != null;
                 FragmentTransaction ft = getFragmentManager().beginTransaction();
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
                     ft.setReorderingAllowed(false);
@@ -433,13 +436,18 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     }
 
     private void processDocument(Document document) {
+        processDocumentData(DocumentData.Create(getContext(), document, mFilterType));
+    }
+
+    private void processImage(Bitmap image) {
+        processDocumentData(DocumentData.Create(getContext(), image, mFilterType));
+    }
+
+    private void processDocumentData(DocumentData data) {
         synchronized (mLock) {
-            DocumentData data = DocumentData.Create(getContext(), document, mFilterType);
             if (data != null) {
-                if (!mSingleDocument)
-                    addDocument(data);
-                saveCroppedImage(document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.getDetectedQuad().points, mFilterType);
-                mIsBusy = true;
+                addDocument(data);
+                saveCroppedImage(data);
             }
         }
     }
@@ -499,6 +507,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             if (!matchLastQuadPoints(document.getDetectedQuad().points)) {
                 mDocumentDetected = 0;
             } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
+                assert getActivity() != null;
                 getActivity().runOnUiThread(() -> {
                     if (mCameraSource != null)
                         mCameraSource.stop();
@@ -517,22 +526,19 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                         .setBitmap(image)
                         .build());
 
+                assert getActivity() != null;
                 if (docs != null && docs.size() > 0) {
                     Log.d("Scanner", "detected document manually");
                     final Document document = docs.get(0);
                     getActivity().runOnUiThread(() -> processDocument(document));
-                } else if (mSingleDocument) {
-                    getActivity().finish();
                 } else {
-                    DocumentData documentData = DocumentData.Create(getContext(), image, mFilterType);
-                    if (documentData != null)
-                        getActivity().runOnUiThread(() -> addDocument(documentData));
+                    getActivity().runOnUiThread(() -> processImage(image));
                 }
             }
         }).start();
     }
 
-    public void setDataList(ArrayList<DocumentData> dataList) {
+    void setDataList(ArrayList<DocumentData> dataList) {
         mDataList = dataList;
     }
 }

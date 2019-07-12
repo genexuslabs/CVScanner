@@ -20,6 +20,8 @@ package devliving.online.cvscanner.crop;
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
 
+import devliving.online.cvscanner.util.Util;
+
 public class RotateBitmap {
     public static final String TAG = "RotateBitmap";
     private Bitmap mBitmap;
@@ -52,22 +54,10 @@ public class RotateBitmap {
     }
 
     public Matrix getRotationMatrix() {
-        // By default this is an identity matrix.
-        Matrix matrix = new Matrix();
-        if (mRotation != 0) {
-            // We want to do the rotation at origin, but since the bounding
-            // rectangle will be changed after rotation, so the delta values
-            // are based on old & new width/height respectively.
-            int cx = mBitmap.getWidth() / 2;
-            int cy = mBitmap.getHeight() / 2;
-            matrix.preTranslate(-cx, -cy);
-            matrix.postRotate(mRotation);
-            matrix.postTranslate(getWidth() / 2, getHeight() / 2);
-        }
-        return matrix;
+        return Util.getRotationMatrix(mBitmap.getWidth(), mBitmap.getHeight(), mRotation);
     }
 
-    public boolean isOrientationChanged() {
+    private boolean isOrientationChanged() {
         return (mRotation / 90) % 2 != 0;
     }
 

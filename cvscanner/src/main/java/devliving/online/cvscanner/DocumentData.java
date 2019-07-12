@@ -148,6 +148,10 @@ public class DocumentData implements Parcelable {
         mFilterType = filterType;
     }
 
+    public Uri getOriginalImageUri() {
+        return mOriginalImageUri;
+    }
+
     public Uri getImageUri() {
         if (mImageUri == null)
             return mOriginalImageUri;

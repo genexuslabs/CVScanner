@@ -29,6 +29,7 @@ import android.view.View;
 import android.widget.ImageView;
 
 import devliving.online.cvscanner.R;
+import devliving.online.cvscanner.util.Util;
 
 // This class is used by CropImage to display a highlighted cropping mTrapezoid
 // overlayed with the image. There are two coordinate spaces in use. One is
@@ -56,6 +57,7 @@ class CropHighlightView implements HighLightView {
 
     private Rect mDrawRect; // in screen space
     private Matrix mMatrix;
+    private int mRotation;
 
     private final Paint mFocusPaint = new Paint();
     private final Paint mOutlinePaint = new Paint();
@@ -108,12 +110,16 @@ class CropHighlightView implements HighLightView {
     }
 
     @Override
-    public void rotate(int delta) {
-        mTrapezoid.rotate(delta);
+    public void setRotation(int rotation) {
+        mRotation = rotation;
+    }
+
+    public Matrix getRotationMatrix() {
+        return Util.getRotationMatrix(mContext.getWidth(), mContext.getHeight(), mRotation);
     }
 
     private void drawEdges(Canvas canvas) {
-        final float[] p = mTrapezoid.getScreenPoints(getMatrix());
+        final float[] p = mTrapezoid.getScreenPoints(getMatrix(), getRotationMatrix());
         Path path = new Path();
         path.moveTo((int) p[0], (int) p[1]);
         path.lineTo((int) p[2], (int) p[3]);

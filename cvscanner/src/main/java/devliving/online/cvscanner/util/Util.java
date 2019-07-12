@@ -3,6 +3,7 @@ package devliving.online.cvscanner.util;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.opengl.GLES10;
 import android.os.Environment;
@@ -247,10 +248,11 @@ public final class Util {
     }
 
     public static boolean setExifRotation(Context context, Uri imageUri, int rotation) throws IOException {
-        if (imageUri == null) return false;
+        if (imageUri == null)
+            return false;
 
         InputStream destStream = null;
-        try{
+        try {
             destStream = context.getContentResolver().openInputStream(imageUri);
 
             ExifInterface exif = new ExifInterface(destStream);
@@ -273,7 +275,7 @@ public final class Util {
             }
             exif.setAttribute(ExifInterface.TAG_ORIENTATION, String.valueOf(orientation));
             exif.saveAttributes();
-        }finally {
+        } finally {
             closeSilently(destStream);
         }
         return true;
@@ -293,5 +295,25 @@ public final class Util {
         int[] maxSize = new int[1];
         GLES10.glGetIntegerv(GLES10.GL_MAX_TEXTURE_SIZE, maxSize, 0);
         return maxSize[0];
+    }
+
+    public static Matrix getRotationMatrix(int width, int height, int rotation) {
+        // By default this is an identity matrix.
+        Matrix matrix = new Matrix();
+        if (rotation != 0) {
+            // We want to do the rotation at origin, but since the bounding
+            // rectangle will be changed after rotation, so the delta values
+            // are based on old & new width/height respectively.
+            int cx = width / 2;
+            int cy = height / 2;
+            matrix.preTranslate(-cx, -cy);
+            matrix.postRotate(rotation);
+
+            if ((rotation / 90) % 2 != 0)
+                matrix.postTranslate(cy, cx); // orientation changed
+            else
+                matrix.postTranslate(cx, cy);
+        }
+        return matrix;
     }
 }

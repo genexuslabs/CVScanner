@@ -123,8 +123,10 @@ public class CroppingTrapezoid {
         return new Rect(left, top, right, bottom);
     }
 
-    public float[] getScreenPoints(Matrix matrix) {
-        matrix.mapPoints(mMappedPoints, mPoints);
+    public float[] getScreenPoints(Matrix matrix, Matrix rotationMatrix) {
+        float[] points = new float[8];
+        matrix.mapPoints(points, mPoints);
+        rotationMatrix.mapPoints(mMappedPoints, points);
         return mMappedPoints;
     }
 
@@ -413,19 +415,5 @@ public class CroppingTrapezoid {
 
     private float getRiseOfLine(float x1, float y1, float x2, float y2) {
         return (y1 - y2) / (x1 - x2);
-    }
-
-    public void rotate(int delta) {
-        if (delta == 1) {
-            // rotate right
-            float aux1 = mPoints[0];
-            float aux2 = mPoints[1];
-            for (int i = 0; i < 6; i++)
-                mPoints[i] = mPoints[i + 2];
-            mPoints[6] = aux1;
-            mPoints[7] = aux2;
-        } else if (delta == -1) {
-            // rotate left
-        }
     }
 }

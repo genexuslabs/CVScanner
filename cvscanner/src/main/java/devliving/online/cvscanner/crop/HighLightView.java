@@ -41,5 +41,5 @@ public interface HighLightView {
 
     void draw(Canvas canvas);
 
-    void rotate(int delta);
+    void setRotation(int delta);
 }

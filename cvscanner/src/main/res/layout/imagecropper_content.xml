@@ -28,10 +28,10 @@
         android:id="@+id/item_rotate_right"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:src="@drawable/ic_rotate_right"
         android:scaleType="fitXY"
+        android:src="@drawable/ic_rotate_right"
         android:layout_alignParentBottom="true"
-        android:layout_toRightOf="@+id/item_save"
+        android:layout_toEndOf="@+id/item_save"
         android:layout_margin="16dp"
         android:visibility="gone"/>
 
@@ -44,7 +44,7 @@
         android:scaleType="fitXY"
         android:src="@drawable/ic_rotate_left"
         android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@+id/item_save"
+        android:layout_toStartOf="@+id/item_save"
         android:layout_margin="16dp"
         android:visibility="gone"/>
 </RelativeLayout>

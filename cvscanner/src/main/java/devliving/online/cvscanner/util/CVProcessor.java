@@ -691,7 +691,7 @@ public class CVProcessor {
      * @param pts - points scaled up with respect to actual image
      * @return
      */
-    public static Mat fourPointTransform( Mat src , Point[] pts ) {
+    public static Mat fourPointTransform(Mat src , Point[] pts) {
         Point tl = pts[0];
         Point tr = pts[1];
         Point br = pts[2];

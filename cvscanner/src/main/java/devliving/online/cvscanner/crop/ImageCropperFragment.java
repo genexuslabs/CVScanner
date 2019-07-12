@@ -155,7 +155,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
     private void rotate(int delta) {
         if (mBitmap != null) {
             mData.rotate(delta);
-            mCrop.rotate(delta);
+            mCrop.setRotation(mData.getRotation() * 90);
             mImageView.setImageBitmapResetBase(mBitmap, false, mData.getRotation() * 90);
         }
     }
@@ -168,7 +168,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
                 Exception error = null;
                 if (mData != null){
                     try {
-                        Uri imageUri = mData.getImageUri();
+                        Uri imageUri = mData.getOriginalImageUri();
                         mScaleFactor = Util.calculateBitmapSampleSize(getContext(), imageUri);
                         mBitmap = Util.loadBitmapFromUri(getContext(), mScaleFactor, imageUri);
                     } catch (IOException e) {
@@ -237,6 +237,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
         mImageView.add(hv);
         mCrop = hv;
         mCrop.setFocus(true);
+        mCrop.setRotation(mData.getRotation() * 90);
         mImageView.invalidate();
     }
 

@@ -100,14 +100,10 @@ public abstract class BaseFragment extends Fragment implements ImageSaveTask.Sav
             mCallback.onImagesProcessed(mDataList);
     }
 
-    protected void saveCroppedImage(Bitmap bitmap, int rotation, Point[] quadPoints, int filterType) {
-        DocumentData data = DocumentData.Create(getContext(), bitmap, rotation, quadPoints, filterType, false);
-        saveCroppedImage(data);
-    }
-
     protected synchronized void saveCroppedImage(DocumentData data) {
         if (!mIsBusy) {
             new ImageSaveTask(getContext(), data, this).execute();
+            mIsBusy = true;
         }
     }
 }

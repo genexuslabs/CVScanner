@@ -16,14 +16,18 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 import devliving.online.cvscanner.BaseFragment;
+import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 import devliving.online.cvscanner.crop.CropImageActivity;
 import devliving.online.cvscanner.scanner.DocumentScannerActivity;
+import devliving.online.cvscanner.util.Util;
 
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
@@ -67,6 +71,7 @@ public class DocumentBrowserFragment extends BaseFragment {
         mPager = view.findViewById(R.id.pager);
 
         Bundle extras = getArguments();
+        assert extras != null;
         mDataList = extras.getParcelableArrayList(ARG_DATA_LIST);
 
         view.findViewById(R.id.done).setOnClickListener(this::onDoneClick);
@@ -103,22 +108,32 @@ public class DocumentBrowserFragment extends BaseFragment {
         mNumbersTextView.setText(text);
     }
 
-    public void loadCurrentData(DocumentData data) {
+    void loadCurrentData(DocumentData data) {
         mDataList.set(mPager.getCurrentItem(), data);
-        mPager.invalidate();
+        mImagesAdapter.notifyDataSetChanged();
     }
 
     private static class ImagesPagerAdapter extends FragmentStatePagerAdapter {
         private ArrayList<DocumentData> mDataList;
 
-        public ImagesPagerAdapter(FragmentManager fm, ArrayList<DocumentData> dataList) {
+        ImagesPagerAdapter(FragmentManager fm, ArrayList<DocumentData> dataList) {
             super(fm);
             mDataList = dataList;
         }
 
         @Override
         public Fragment getItem(int position) {
-            return ImageFragment.instantiate(mDataList.get(position).getImageUri());
+            return ImageFragment.instantiate(getData(position).getImageUri());
+        }
+
+        @Override
+        public int getItemPosition(@NonNull Object object) {
+            ImageFragment f = ((ImageFragment)object);
+            String imageUri = f.getImageUri();
+            for (DocumentData data : mDataList)
+                if (data.getImageUri().toString().equals(imageUri))
+                    return POSITION_UNCHANGED;
+            return POSITION_NONE; // so it reloads after Cropping
         }
 
         @Override
@@ -131,13 +146,11 @@ public class DocumentBrowserFragment extends BaseFragment {
         }
 
         void setFilterType(int position, int filterType) {
-            mDataList.get(position).setFilterType(filterType);
-            notifyDataSetChanged();
+            getData(position).setFilterType(filterType);
         }
 
         void rotate(int position) {
-            DocumentData data = mDataList.get(position);
-            data.rotate(1);
+            getData(position).rotate(1);
             notifyDataSetChanged();
         }
 
@@ -160,43 +173,54 @@ public class DocumentBrowserFragment extends BaseFragment {
 
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            String imageUri = getArguments().getString(ARG_IMAGE_PATH);
             ImageView imageView = new ImageView(getContext());
-            imageView.setImageURI(Uri.parse(imageUri));
+            imageView.setImageURI(Uri.parse(getImageUri()));
             return imageView;
+        }
+
+        String getImageUri() {
+            assert getArguments() != null;
+            return getArguments().getString(ARG_IMAGE_PATH);
         }
     }
 
-    public void onDoneClick(View v) {
+    private void onDoneClick(View v) {
         done();
     }
 
-    public void onRetakeClick(View v) {
+    private void onRetakeClick(View v) {
         Intent intent = new Intent(getContext(), DocumentScannerActivity.class);
         startActivity(intent);
     }
 
     private void setFilterType(int filterType) {
         mImagesAdapter.setFilterType(mPager.getCurrentItem(), filterType);
+        DocumentData data = mDataList.get(mPager.getCurrentItem());
+        try {
+            data.setOriginalImage(Util.loadBitmapFromUri(Objects.requireNonNull(getContext()), 1, data.getOriginalImageUri()));
+            saveCroppedImage(data);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
-    public void onColorClick(View v) {
+    private void onColorClick(View v) {
         setFilterType(V_FILTER_TYPE_COLOR);
     }
 
-    public void onGrayscaleClick(View v) {
+    private void onGrayscaleClick(View v) {
         setFilterType(V_FILTER_TYPE_GRAYSCALE);
     }
 
-    public void onBlackWhiteClick(View v) {
+    private void onBlackWhiteClick(View v) {
         setFilterType(V_FILTER_TYPE_BLACK_WHITE);
     }
 
-    public void onPhotoClick(View v) {
+    private void onPhotoClick(View v) {
         setFilterType(V_FILTER_TYPE_PHOTO);
     }
 
-    public void onFiltersClick(View v) {
+    private void onFiltersClick(View v) {
         if (mFiltersPanel.getVisibility() == View.GONE)
             mFiltersPanel.setVisibility(View.VISIBLE);
         else
@@ -210,11 +234,17 @@ public class DocumentBrowserFragment extends BaseFragment {
         getActivity().startActivityForResult(intent, REQ_CROP_IMAGE);
     }
 
-    public void onRotateClick(View v) {
+    private void onRotateClick(View v) {
         mImagesAdapter.rotate(mPager.getCurrentItem());
     }
 
-    public void onEraseClick(View v) {
+    private void onEraseClick(View v) {
         mImagesAdapter.remove(mPager.getCurrentItem());
+    }
+
+    @Override
+    public void onSaved(String path) {
+        super.onSaved(path);
+        mImagesAdapter.notifyDataSetChanged();
     }
 }
