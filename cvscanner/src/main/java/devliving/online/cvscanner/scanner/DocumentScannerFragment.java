@@ -540,5 +540,9 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
     void setDataList(ArrayList<DocumentData> dataList) {
         mDataList = dataList;
+        if (dataList.size() == 0) {
+            mDocumentsButton.setVisibility(View.GONE);
+            mDoneButton.setVisibility(View.GONE);
+        }
     }
 }
