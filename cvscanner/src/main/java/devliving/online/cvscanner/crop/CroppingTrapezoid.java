@@ -123,10 +123,8 @@ public class CroppingTrapezoid {
         return new Rect(left, top, right, bottom);
     }
 
-    public float[] getScreenPoints(Matrix matrix, Matrix rotationMatrix) {
-        float[] points = new float[8];
-        matrix.mapPoints(points, mPoints);
-        rotationMatrix.mapPoints(mMappedPoints, points);
+    public float[] getScreenPoints(Matrix matrix) {
+        matrix.mapPoints(mMappedPoints, mPoints);
         return mMappedPoints;
     }
 

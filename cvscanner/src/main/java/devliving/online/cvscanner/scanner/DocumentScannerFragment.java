@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.media.MediaActionSound;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.AttributeSet;
@@ -457,11 +458,14 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         super.onSaved(path);
         if (mSingleDocument)
             done();
+        else {
+            mDocumentsButton.setVisibility(View.VISIBLE);
+            mDoneButton.setVisibility(View.VISIBLE);
+            mDocumentsButton.setImageURI(Uri.parse(path));
+        }
     }
 
     private void addDocument(DocumentData data) {
-        mDocumentsButton.setVisibility(View.VISIBLE);
-        mDoneButton.setVisibility(View.VISIBLE);
         if (mDataList == null)
             mDataList = new ArrayList<>();
         mDataList.add(data);
@@ -503,14 +507,13 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     @Override
     public void onDocumentDetected(final Document document) {
         Log.d("Scanner", "document detected");
-        if (document != null && !mDisableAutomaticCapture && !mManual) {
+        if (document != null && !mDisableAutomaticCapture && !mManual && !mIsBusy) {
             if (!matchLastQuadPoints(document.getDetectedQuad().points)) {
                 mDocumentDetected = 0;
-            } else if (++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
+            } else if (mDocumentDetected != -1 && ++mDocumentDetected >= AUTO_SCAN_THRESHOLD) {
+                mDocumentDetected = -1; // Don't process twice
                 assert getActivity() != null;
                 getActivity().runOnUiThread(() -> {
-                    if (mCameraSource != null)
-                        mCameraSource.stop();
                     processDocument(document);
                 });
             }

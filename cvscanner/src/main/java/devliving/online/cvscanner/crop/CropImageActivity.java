@@ -31,6 +31,9 @@ import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 
+import static devliving.online.cvscanner.CVScanner.RESULT_DATA;
+import static devliving.online.cvscanner.CVScanner.RESULT_IMAGE_PATH;
+
 /**
  * The activity can crop specific region of interest from an image.
  */
@@ -43,8 +46,6 @@ public class CropImageActivity extends AppCompatActivity implements BaseFragment
 
     public static final String EXTRA_SAVE_BTN_COLOR_RES = "save_imageColorRes";
     public static final String EXTRA_ROTATE_BTN_COLOR_RES = "rotate_imageColorRes";
-
-    public static final String RESULT_DATA = "output_data";
 
     @Override
     public void onCreate(Bundle icicle) {
@@ -100,6 +101,7 @@ public class CropImageActivity extends AppCompatActivity implements BaseFragment
 
     void setResultAndExit(DocumentData documentData) {
         Intent data = getIntent();
+        data.putExtra(RESULT_IMAGE_PATH, documentData.getImageUri().toString());
         data.putExtra(RESULT_DATA, documentData);
         setResult(RESULT_OK, data);
         finish();

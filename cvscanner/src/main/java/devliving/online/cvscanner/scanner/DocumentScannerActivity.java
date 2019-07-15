@@ -134,7 +134,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == REQ_DOCUMENT_BROWSE) {
-            ArrayList<DocumentData> dataList = data.getParcelableArrayListExtra(DocumentBrowserActivity.RESULT_DATA_LIST);
+            ArrayList<DocumentData> dataList = data.getParcelableArrayListExtra(CVScanner.RESULT_DATA_LIST);
             mFragment.setDataList(dataList);
         }
     }
@@ -225,6 +225,11 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
             list[i] = dataList.get(i).getImageUri().toString();
         Intent data = getIntent();
         data.putExtra(CVScanner.RESULT_IMAGES_PATH, list);
+        data.putExtra(CVScanner.RESULT_DATA_LIST, dataList);
+        if (list.length > 0) {
+            data.putExtra(CVScanner.RESULT_IMAGE_PATH, list[0]);
+            data.putExtra(CVScanner.RESULT_DATA, dataList.get(0));
+        }
         setResult(RESULT_OK, data);
         finish();
     }

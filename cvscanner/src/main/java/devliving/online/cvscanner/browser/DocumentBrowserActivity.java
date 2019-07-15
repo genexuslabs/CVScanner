@@ -10,14 +10,16 @@ import androidx.fragment.app.FragmentActivity;
 import java.util.ArrayList;
 
 import devliving.online.cvscanner.BaseFragment;
+import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
-import devliving.online.cvscanner.crop.CropImageActivity;
+
+import static devliving.online.cvscanner.CVScanner.RESULT_DATA_LIST;
 
 public class DocumentBrowserActivity extends FragmentActivity implements BaseFragment.ImageProcessorCallback {
     public static String EXTRA_DATA_LIST = "document_data_list";
-    public static String RESULT_DATA_LIST = "result_data_list";
 
+    public static final int REQ_SCAN = 11;
     public static final int REQ_CROP_IMAGE = 13;
 
     private DocumentBrowserFragment mFragment;
@@ -53,9 +55,19 @@ public class DocumentBrowserActivity extends FragmentActivity implements BaseFra
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (resultCode == RESULT_OK && requestCode == REQ_CROP_IMAGE) {
-            DocumentData documentData = data.getParcelableExtra(CropImageActivity.RESULT_DATA);
-            mFragment.loadCurrentData(documentData);
+        if (resultCode == RESULT_OK) {
+            switch (requestCode) {
+                case REQ_SCAN: {
+                    DocumentData documentData = data.getParcelableExtra(CVScanner.RESULT_DATA);
+                    mFragment.loadCurrentData(documentData);
+                    break;
+                }
+                case REQ_CROP_IMAGE: {
+                    DocumentData documentData = data.getParcelableExtra(CVScanner.RESULT_DATA);
+                    mFragment.loadCurrentData(documentData);
+                    break;
+                }
+            }
         }
     }
 

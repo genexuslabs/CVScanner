@@ -20,7 +20,10 @@ import devliving.online.cvscanner.util.Util;
  */
 
 public final class CVScanner {
+    public static String RESULT_IMAGE_PATH = "result_image_path";
     public static String RESULT_IMAGES_PATH = "result_images_path";
+    public static String RESULT_DATA = "result_data";
+    public static String RESULT_DATA_LIST = "result_data_list";
 
     public static String getFileproviderName(Context context){
         return context.getPackageName() + ".cvscanner.fileprovider";

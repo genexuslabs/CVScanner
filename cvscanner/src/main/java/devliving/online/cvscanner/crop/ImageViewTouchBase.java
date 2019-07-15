@@ -28,6 +28,8 @@ import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 
+import devliving.online.cvscanner.util.Util;
+
 public abstract class ImageViewTouchBase extends androidx.appcompat.widget.AppCompatImageView {
 
     @SuppressWarnings("unused")
@@ -275,27 +277,7 @@ public abstract class ImageViewTouchBase extends androidx.appcompat.widget.AppCo
 
     // Setup the base matrix so that the image is centered and scaled properly.
     private void getProperBaseMatrix(RotateBitmap bitmap, Matrix matrix) {
-        float viewWidth = getWidth();
-        float viewHeight = getHeight();
-
-        float w = bitmap.getWidth();
-        float h = bitmap.getHeight();
-        //int rotation = bitmap.getRotation();
-
-        matrix.reset();
-
-        // We limit up-scaling to 2x otherwise the result may look bad if it's
-        // a small icon.
-        float widthScale = Math.min(viewWidth / w, 2.0f);
-        float heightScale = Math.min(viewHeight / h, 2.0f);
-        float scale = Math.min(widthScale, heightScale);
-
-        matrix.postConcat(bitmap.getRotationMatrix());
-        matrix.postScale(scale, scale);
-
-        matrix.postTranslate(
-                (viewWidth - w * scale) / 2F,
-                (viewHeight - h * scale) / 2F);
+        Util.getMatrix(getWidth(), getHeight(), bitmap.getWidth(), bitmap.getHeight(), bitmap.getRotationMatrix(), matrix);
     }
 
     // Combine the base matrix and the supp matrix to make the final matrix.

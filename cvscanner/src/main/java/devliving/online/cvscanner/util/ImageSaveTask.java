@@ -63,7 +63,7 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
         image.recycle();
 
         Mat croppedImage;
-        if (mData.getPoints().length == 4) {
+        if (hasFourDifferentPoints(mData.getPoints())) {
             croppedImage = CVProcessor.fourPointTransform(imageMat, mData.getPoints());
             imageMat.release();
         } else {
@@ -92,18 +92,39 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
                 enhancedImage = croppedImage;
         }
 
+        Mat rotatedImage;
+
+        if (mData.getRotation() != 0) {
+            rotatedImage = CVProcessor.rotate(enhancedImage, mData.getRotation());
+            enhancedImage.release();
+        } else {
+            rotatedImage = enhancedImage;
+        }
+
         String imagePath = null;
         try {
             imagePath = Util.saveImage(mContext,
-                    "IMG_CVScanner_" + System.currentTimeMillis(), enhancedImage, false);
+                    "IMG_CVScanner_" + System.currentTimeMillis(), rotatedImage, false);
             enhancedImage.release();
             mData.setImageUri(Util.getUriFromPath(imagePath));
-            Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mData.getRotation());
+            //Util.setExifRotation(mContext, Util.getUriFromPath(imagePath), mData.getRotation()); // Already did the rotation
         } catch (IOException e) {
             e.printStackTrace();
         }
 
         return imagePath;
+    }
+
+    private boolean hasFourDifferentPoints(Point[] points) {
+        if (points.length != 4)
+            return false;
+
+        for (int i = 0; i < points.length - 1; i++)
+            for (int j = i + 1; j < points.length; j++)
+                if (points[i].x == points[j].x && points[i].y == points[i].y)
+                    return false;
+
+        return true;
     }
 
     @Override

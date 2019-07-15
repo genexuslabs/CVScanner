@@ -49,10 +49,10 @@ public class DocumentDetector extends Detector<Document> {
         List<MatOfPoint> contours = CVProcessor.findContours(src);
         src.release();
 
-        if(!contours.isEmpty()){
+        if (!contours.isEmpty()) {
             CVProcessor.Quadrilateral quad = CVProcessor.getQuadrilateral(contours, imageSize);
 
-            if(quad != null){
+            if (quad != null) {
                 quad.points = CVProcessor.getUpscaledPoints(quad.points, CVProcessor.getScaleRatio(imageSize));
 
                 Point tl = quad.points[0];

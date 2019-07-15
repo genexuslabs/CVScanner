@@ -40,6 +40,4 @@ public interface HighLightView {
     void handleMotion(int motionEdge, float dx, float dy);
 
     void draw(Canvas canvas);
-
-    void setRotation(int delta);
 }

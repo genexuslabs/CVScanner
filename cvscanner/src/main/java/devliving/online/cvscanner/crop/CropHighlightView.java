@@ -57,7 +57,6 @@ class CropHighlightView implements HighLightView {
 
     private Rect mDrawRect; // in screen space
     private Matrix mMatrix;
-    private int mRotation;
 
     private final Paint mFocusPaint = new Paint();
     private final Paint mOutlinePaint = new Paint();
@@ -109,17 +108,8 @@ class CropHighlightView implements HighLightView {
         drawEdges(canvas);
     }
 
-    @Override
-    public void setRotation(int rotation) {
-        mRotation = rotation;
-    }
-
-    public Matrix getRotationMatrix() {
-        return Util.getRotationMatrix(mContext.getWidth(), mContext.getHeight(), mRotation);
-    }
-
     private void drawEdges(Canvas canvas) {
-        final float[] p = mTrapezoid.getScreenPoints(getMatrix(), getRotationMatrix());
+        final float[] p = mTrapezoid.getScreenPoints(mMatrix);
         Path path = new Path();
         path.moveTo((int) p[0], (int) p[1]);
         path.lineTo((int) p[2], (int) p[3]);
@@ -209,16 +199,19 @@ class CropHighlightView implements HighLightView {
 
     // Maps the cropping rectangle from image space to screen space.
     private Rect computeLayout() {
-        return mTrapezoid.getBoundingRect(getMatrix());
+        return mTrapezoid.getBoundingRect(mMatrix);
     }
 
     @Override
     public Matrix getMatrix() {
+        mDrawRect.setEmpty(); // assume matrix will be changed
         return mMatrix;
     }
 
     @Override
     public Rect getDrawRect() {
+        if (mDrawRect.isEmpty())
+            mDrawRect = computeLayout();
         return mDrawRect;
     }
 

@@ -316,4 +316,21 @@ public final class Util {
         }
         return matrix;
     }
+
+    public static void getMatrix(float viewWidth, float viewHeight, float w, float h, Matrix rotationMatrix, Matrix matrix) {
+        matrix.reset();
+
+        // We limit up-scaling to 2x otherwise the result may look bad if it's
+        // a small icon.
+        float widthScale = Math.min(viewWidth / w, 2.0f);
+        float heightScale = Math.min(viewHeight / h, 2.0f);
+        float scale = Math.min(widthScale, heightScale);
+
+        matrix.postConcat(rotationMatrix);
+        matrix.postScale(scale, scale);
+
+        matrix.postTranslate(
+                (viewWidth - w * scale) / 2F,
+                (viewHeight - h * scale) / 2F);
+    }
 }

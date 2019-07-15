@@ -1,6 +1,10 @@
 package devliving.online.cvscanner.browser;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -11,17 +15,20 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 
 import devliving.online.cvscanner.BaseFragment;
+import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
@@ -34,6 +41,7 @@ import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
 import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.REQ_CROP_IMAGE;
+import static devliving.online.cvscanner.browser.DocumentBrowserActivity.REQ_SCAN;
 
 public class DocumentBrowserFragment extends BaseFragment {
     private TextView mNumbersTextView;
@@ -123,7 +131,8 @@ public class DocumentBrowserFragment extends BaseFragment {
 
         @Override
         public Fragment getItem(int position) {
-            return ImageFragment.instantiate(getData(position).getImageUri());
+            DocumentData data = getData(position);
+            return ImageFragment.instantiate(data.getImageUri());
         }
 
         @Override
@@ -133,7 +142,7 @@ public class DocumentBrowserFragment extends BaseFragment {
             for (DocumentData data : mDataList)
                 if (data.getImageUri().toString().equals(imageUri))
                     return POSITION_UNCHANGED;
-            return POSITION_NONE; // so it reloads after Cropping
+            return POSITION_NONE; // so it reloads after Cropping or Rotate
         }
 
         @Override
@@ -173,8 +182,9 @@ public class DocumentBrowserFragment extends BaseFragment {
 
         @Override
         public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-            ImageView imageView = new ImageView(getContext());
-            imageView.setImageURI(Uri.parse(getImageUri()));
+            AppCompatImageView imageView = new AppCompatImageView(Objects.requireNonNull(getContext()));
+            Uri imageUri = Uri.parse(getImageUri());
+            imageView.setImageURI(imageUri);
             return imageView;
         }
 
@@ -189,12 +199,16 @@ public class DocumentBrowserFragment extends BaseFragment {
     }
 
     private void onRetakeClick(View v) {
-        Intent intent = new Intent(getContext(), DocumentScannerActivity.class);
-        startActivity(intent);
+        DocumentData data = mDataList.get(mPager.getCurrentItem());
+        CVScanner.startScanner(getActivity(), false, true, false, data.getFilterType(), true, REQ_SCAN);
     }
 
     private void setFilterType(int filterType) {
         mImagesAdapter.setFilterType(mPager.getCurrentItem(), filterType);
+        updateImage();
+    }
+
+    private void updateImage() {
         DocumentData data = mDataList.get(mPager.getCurrentItem());
         try {
             data.setOriginalImage(Util.loadBitmapFromUri(Objects.requireNonNull(getContext()), 1, data.getOriginalImageUri()));
@@ -236,10 +250,13 @@ public class DocumentBrowserFragment extends BaseFragment {
 
     private void onRotateClick(View v) {
         mImagesAdapter.rotate(mPager.getCurrentItem());
+        updateImage();
     }
 
     private void onEraseClick(View v) {
         mImagesAdapter.remove(mPager.getCurrentItem());
+        if (mImagesAdapter.getCount() == 0)
+            done();
     }
 
     @Override
