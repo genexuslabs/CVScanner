@@ -1,15 +1,21 @@
 package devliving.online.cvscanner.scanner;
 
+import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.shapes.PathShape;
 import android.util.Log;
+import android.view.Surface;
+import android.view.WindowManager;
+
+import org.opencv.core.Point;
 
 import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.util.CVProcessor;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
+import online.devliving.mobilevisionpipeline.Util;
 
 /**
  * Created by user on 10/15/16.
@@ -75,58 +81,56 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
      */
     @Override
     public void draw(Canvas canvas) {
-        //TODO fix the coordinates see http://zhengrui.github.io/android-coordinates.html
+        if (scannedDoc != null && scannedDoc.getDetectedQuad() != null) {
+            int frameWidth = scannedDoc.getImage().getMetadata().getWidth();
+            int frameHeight = scannedDoc.getImage().getMetadata().getHeight();
 
-        if(scannedDoc != null && scannedDoc.getDetectedQuad() != null){
-            //boolean isPortrait = Util.isPortraitMode(mOverlay.getContext());
-            Path path = new Path();
-
-            /*
-            Log.d("DOC-GRAPHIC", "IsPortrait? " + isPortrait);
-
-            float tlX = isPortrait? translateY((float) scannedDoc.detectedQuad.points[0].y):translateX((float) scannedDoc.detectedQuad.points[0].x);
-            float tlY = isPortrait? translateX((float) scannedDoc.detectedQuad.points[0].x):translateY((float) scannedDoc.detectedQuad.points[0].y);
-
-            Log.d("DOC-GRAPHIC", "Top left: x: " + scannedDoc.detectedQuad.points[0].x + ", y: " + scannedDoc.detectedQuad.points[0].y
-                    + " -> x: " + tlX + ", y: " + tlY);
-
-            float blX = isPortrait? translateY((float) scannedDoc.detectedQuad.points[1].y):translateX((float) scannedDoc.detectedQuad.points[1].x);
-            float blY = isPortrait? translateX((float) scannedDoc.detectedQuad.points[1].x):translateY((float) scannedDoc.detectedQuad.points[1].y);
-
-            Log.d("DOC-GRAPHIC", "Bottom left: x: " + scannedDoc.detectedQuad.points[1].x + ", y: " + scannedDoc.detectedQuad.points[1].y
-                    + " -> x: " + blX + ", y: " + blY);
-
-            float brX = isPortrait? translateY((float) scannedDoc.detectedQuad.points[2].y):translateX((float) scannedDoc.detectedQuad.points[2].x);
-            float brY = isPortrait? translateX((float) scannedDoc.detectedQuad.points[2].x):translateY((float) scannedDoc.detectedQuad.points[2].y);
-
-            Log.d("DOC-GRAPHIC", "Bottom right: x: " + scannedDoc.detectedQuad.points[2].x + ", y: " + scannedDoc.detectedQuad.points[2].y
-                    + " -> x: " + brX + ", y: " + brY);
-
-            float trX = isPortrait? translateY((float) scannedDoc.detectedQuad.points[3].y):translateX((float) scannedDoc.detectedQuad.points[3].x);
-            float trY = isPortrait? translateX((float) scannedDoc.detectedQuad.points[3].x):translateY((float) scannedDoc.detectedQuad.points[3].y);
-
-            Log.d("DOC-GRAPHIC", "Top right: x: " + scannedDoc.detectedQuad.points[3].x + ", y: " + scannedDoc.detectedQuad.points[3].y
-                    + " -> x: " + trX + ", y: " + trY);
-            */
-            int frameWidth = scannedDoc.getImage().getMetadata().getHeight();
+            final int screenRotation = ((WindowManager) mOverlay.getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
 
             CVProcessor.Quadrilateral detectedQuad = scannedDoc.getDetectedQuad();
-            path.moveTo(((float)(frameWidth - detectedQuad.points[0].y)), ((float)detectedQuad.points[0].x));
-            path.lineTo(((float)(frameWidth - detectedQuad.points[1].y)), ((float)detectedQuad.points[1].x));
-            path.lineTo(((float)(frameWidth - detectedQuad.points[2].y)), ((float)detectedQuad.points[2].x));
-            path.lineTo(((float)(frameWidth - detectedQuad.points[3].y)), ((float)detectedQuad.points[3].x));
+
+            Path path = new Path();
+            path.moveTo(getX(frameWidth, frameHeight, screenRotation, detectedQuad.points[0]), getY(frameWidth, frameHeight, screenRotation, detectedQuad.points[0]));
+            path.lineTo(getX(frameWidth, frameHeight, screenRotation, detectedQuad.points[1]), getY(frameWidth, frameHeight, screenRotation, detectedQuad.points[1]));
+            path.lineTo(getX(frameWidth, frameHeight, screenRotation, detectedQuad.points[2]), getY(frameWidth, frameHeight, screenRotation, detectedQuad.points[2]));
+            path.lineTo(getX(frameWidth, frameHeight, screenRotation, detectedQuad.points[3]), getY(frameWidth, frameHeight, screenRotation, detectedQuad.points[3]));
             path.close();
 
-            PathShape shape = new PathShape(path, scannedDoc.getImage().getMetadata().getHeight(), scannedDoc.getImage().getMetadata().getWidth());
+            boolean isPortrait = screenRotation == Surface.ROTATION_0 || screenRotation == Surface.ROTATION_180;
+            PathShape shape = new PathShape(path, isPortrait ? frameHeight : frameWidth, isPortrait ? frameWidth : frameHeight);
             shape.resize(canvas.getWidth(), canvas.getHeight());
 
             shape.draw(canvas, bodyPaint);
             shape.draw(canvas, borderPaint);
+        }
+    }
 
-            //canvas.drawPath(path, borderPaint);
-            //canvas.drawPath(path, bodyPaint);
+    // See http://zhengrui.github.io/android-coordinates.html
+    private float getX(int frameWidth, int frameHeight, int screenRotation, Point point) {
+        switch (screenRotation) {
+            case Surface.ROTATION_0: // Portrait
+            default:
+                return (float)(frameHeight - point.y);
+            case Surface.ROTATION_180: // Reverse Portrait
+                return (float)point.y;
+            case Surface.ROTATION_90: // Landscape
+                return (float)point.x;
+            case Surface.ROTATION_270: // Reverse Landscape
+                return (float)(frameWidth - point.x);
+        }
+    }
 
-            Log.d("DOC-GRAPHIC", "DONE DRAWING");
+    private float getY(int frameWidth, int frameHeight, int screenRotation, Point point) {
+        switch (screenRotation) {
+            case Surface.ROTATION_0: // Portrait
+            default:
+                return (float)point.x;
+            case Surface.ROTATION_180: // Reverse Portrait
+                return (float)(frameWidth - point.x);
+            case Surface.ROTATION_90: // Landscape
+                return (float)point.y;
+            case Surface.ROTATION_270: // Reverse Landscape
+                return (float)(frameHeight - point.y);
         }
     }
 }

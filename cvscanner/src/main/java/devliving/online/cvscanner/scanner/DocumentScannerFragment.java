@@ -303,6 +303,12 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             mDoneButton.setOnClickListener(v -> {
                 done();
             });
+
+            if (mDataList != null && mDataList.size() > 0) {
+                mDocumentsButton.setVisibility(View.VISIBLE);
+                mDoneButton.setVisibility(View.VISIBLE);
+                mDocumentsButton.setImageURI(mDataList.get(mDataList.size() - 1).getImageUri());
+            }
         }
     }
 
@@ -365,9 +371,13 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         DocumentTrackerFactory factory = new DocumentTrackerFactory(mGraphicOverlay, this);
         IDDetector.setProcessor(
                 new MultiProcessor.Builder<>(factory).build());*/
+
         DocumentGraphic graphic = new DocumentGraphic(mGraphicOverlay, null);
-        if(mDocumentBorderColor != -1) graphic.setBorderColor(mDocumentBorderColor);
-        if(mDocumentBodyColor != -1) graphic.setFillColor(mDocumentBodyColor);
+        if (mDocumentBorderColor != -1)
+            graphic.setBorderColor(mDocumentBorderColor);
+
+        if (mDocumentBodyColor != -1)
+            graphic.setFillColor(mDocumentBodyColor);
 
         DocumentProcessor processor = new DocumentProcessor(IDDetector,
                 new DocumentTracker(mGraphicOverlay, graphic, this));
@@ -546,6 +556,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         if (dataList.size() == 0) {
             mDocumentsButton.setVisibility(View.GONE);
             mDoneButton.setVisibility(View.GONE);
+        } else {
+            mDocumentsButton.setImageURI(dataList.get(dataList.size() - 1).getImageUri());
         }
     }
 }
