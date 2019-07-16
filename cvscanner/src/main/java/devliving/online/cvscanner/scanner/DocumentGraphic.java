@@ -6,7 +6,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.shapes.PathShape;
-import android.util.Log;
 import android.view.Surface;
 import android.view.WindowManager;
 
@@ -15,7 +14,6 @@ import org.opencv.core.Point;
 import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.util.CVProcessor;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
-import online.devliving.mobilevisionpipeline.Util;
 
 /**
  * Created by user on 10/15/16.
@@ -96,8 +94,7 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
             path.lineTo(getX(frameWidth, frameHeight, screenRotation, detectedQuad.points[3]), getY(frameWidth, frameHeight, screenRotation, detectedQuad.points[3]));
             path.close();
 
-            boolean isPortrait = screenRotation == Surface.ROTATION_0 || screenRotation == Surface.ROTATION_180;
-            PathShape shape = new PathShape(path, isPortrait ? frameHeight : frameWidth, isPortrait ? frameWidth : frameHeight);
+            PathShape shape = new PathShape(path, isPortrait(screenRotation) ? frameHeight : frameWidth, isPortrait(screenRotation) ? frameWidth : frameHeight);
             shape.resize(canvas.getWidth(), canvas.getHeight());
 
             shape.draw(canvas, bodyPaint);
@@ -106,7 +103,7 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
     }
 
     // See http://zhengrui.github.io/android-coordinates.html
-    private float getX(int frameWidth, int frameHeight, int screenRotation, Point point) {
+    static float getX(int frameWidth, int frameHeight, int screenRotation, Point point) {
         switch (screenRotation) {
             case Surface.ROTATION_0: // Portrait
             default:
@@ -120,7 +117,7 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
         }
     }
 
-    private float getY(int frameWidth, int frameHeight, int screenRotation, Point point) {
+    static float getY(int frameWidth, int frameHeight, int screenRotation, Point point) {
         switch (screenRotation) {
             case Surface.ROTATION_0: // Portrait
             default:
@@ -132,5 +129,9 @@ public class DocumentGraphic extends GraphicOverlay.Graphic {
             case Surface.ROTATION_270: // Reverse Landscape
                 return (float)(frameHeight - point.y);
         }
+    }
+
+    static boolean isPortrait(int screenRotation) {
+        return screenRotation == Surface.ROTATION_0 || screenRotation == Surface.ROTATION_180;
     }
 }

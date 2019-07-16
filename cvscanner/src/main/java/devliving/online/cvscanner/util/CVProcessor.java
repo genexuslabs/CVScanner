@@ -600,20 +600,9 @@ public class CVProcessor {
 
         Point[] result = { null , null , null , null };
 
-        Comparator<Point> sumComparator = new Comparator<Point>() {
-            @Override
-            public int compare(Point lhs, Point rhs) {
-                return Double.compare(lhs.y + lhs.x, rhs.y + rhs.x);
-            }
-        };
+        Comparator<Point> sumComparator = (lhs, rhs) -> Double.compare(lhs.y + lhs.x, rhs.y + rhs.x);
 
-        Comparator<Point> diffComparator = new Comparator<Point>() {
-
-            @Override
-            public int compare(Point lhs, Point rhs) {
-                return Double.compare(lhs.y - lhs.x, rhs.y - rhs.x);
-            }
-        };
+        Comparator<Point> diffComparator = (lhs, rhs) -> Double.compare(lhs.y - lhs.x, rhs.y - rhs.x);
 
         // top-left corner = minimal sum
         result[0] = Collections.min(srcPoints, sumComparator);

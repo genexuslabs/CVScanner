@@ -15,7 +15,6 @@
         <activity android:name=".scanner.DocumentScannerActivity"
             android:theme="@style/CVScannerTheme"
             android:configChanges="orientation|screenSize"
-            android:screenOrientation="fullSensor"
             />
 
         <activity android:name=".browser.DocumentBrowserActivity"

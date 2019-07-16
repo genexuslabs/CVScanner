@@ -121,7 +121,7 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
 
         for (int i = 0; i < points.length - 1; i++)
             for (int j = i + 1; j < points.length; j++)
-                if (points[i].x == points[j].x && points[i].y == points[i].y)
+                if (points[i].x == points[j].x && points[i].y == points[j].y)
                     return false;
 
         return true;
