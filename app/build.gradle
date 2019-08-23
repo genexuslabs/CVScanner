@@ -27,8 +27,8 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation 'androidx.appcompat:appcompat:1.0.2'
-    implementation 'com.google.android.material:material:1.1.0-alpha07'
+    implementation 'com.google.android.material:material:1.1.0-alpha09'
     implementation 'com.getbase:floatingactionbutton:1.10.1'
-    implementation 'com.genexus:opencv:4.1.0-SNAPSHOT'
+    implementation 'com.genexus:opencv:4.1.1-SNAPSHOT'
     implementation project(':cvscanner')
 }
