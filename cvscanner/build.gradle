@@ -42,8 +42,6 @@ dependencies {
 def siteUrl = "https://github.com/Credntia/CVScanner"
 def gitUrl = "https://github.com/Credntia/CVScanner.git"
 
-group = "online.devliving"
-
 task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.srcDirs
     classifier = 'sources'
