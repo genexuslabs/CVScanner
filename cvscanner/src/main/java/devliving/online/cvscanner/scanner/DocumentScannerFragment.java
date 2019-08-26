@@ -44,6 +44,7 @@ import java.util.Objects;
 
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.Document;
+import devliving.online.cvscanner.FilterType;
 import devliving.online.cvscanner.browser.DocumentBrowserActivity;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
@@ -53,9 +54,6 @@ import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.EXTRA_DATA_LIST;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
 import static devliving.online.cvscanner.scanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
 
 /**
@@ -80,7 +78,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private boolean mShowFlash;
     private ImageButton mFlashToggle;
     private boolean mDisableAutomaticCapture;
-    private int mFilterType;
+    private FilterType mFilterType;
     private boolean mSingleDocument;
 
     private ImageButton mTakePictureButton;
@@ -116,26 +114,26 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static int AUTO_SCAN_THRESHOLD = 3;
     private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
-        args.putInt(ARG_FILTER_TYPE, filterType);
+        args.putInt(ARG_FILTER_TYPE, filterType.ordinal());
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, int filterType, boolean singleDocument,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument,
                                                       @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
-        args.putInt(ARG_FILTER_TYPE, filterType);
+        args.putInt(ARG_FILTER_TYPE, filterType.ordinal());
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
@@ -210,7 +208,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         isPassport = args != null && args.getBoolean(ARG_IS_PASSPORT, false);
         mShowFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
         mDisableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
-        mFilterType = args != null ? args.getInt(ARG_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
+        mFilterType = args != null ? FilterType.values()[args.getInt(ARG_FILTER_TYPE, FilterType.Color.ordinal())] : FilterType.Color;
         mSingleDocument = args != null && args.getBoolean(ARG_SINGLE_DOCUMENT, true);
 
         Resources.Theme theme = Objects.requireNonNull(getActivity()).getTheme();
@@ -258,9 +256,9 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             mCancelButton.setVisibility(View.GONE);
             mManualButton.setVisibility(View.GONE);
             mFiltersPanel.setVisibility(View.VISIBLE);
-            mFilterColorButton.setTextColor(mFilterType == V_FILTER_TYPE_COLOR ? Color.YELLOW : Color.WHITE);
-            mFilterGrayscaleButton.setTextColor(mFilterType == V_FILTER_TYPE_GRAYSCALE ? Color.YELLOW : Color.WHITE);
-            mFilterBlackWhiteButton.setTextColor(mFilterType == V_FILTER_TYPE_BLACK_WHITE ? Color.YELLOW : Color.WHITE);
+            mFilterColorButton.setTextColor(mFilterType == FilterType.Color ? Color.YELLOW : Color.WHITE);
+            mFilterGrayscaleButton.setTextColor(mFilterType == FilterType.Grayscale ? Color.YELLOW : Color.WHITE);
+            mFilterBlackWhiteButton.setTextColor(mFilterType == FilterType.BlackWhite ? Color.YELLOW : Color.WHITE);
         });
 
         mFiltersCloseButton.setOnClickListener(v -> {
@@ -269,17 +267,17 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
 
         mFilterColorButton.setOnClickListener(v -> {
             hideColorPicker();
-            mFilterType = V_FILTER_TYPE_COLOR;
+            mFilterType = FilterType.Color;
         });
 
         mFilterGrayscaleButton.setOnClickListener(v -> {
             hideColorPicker();
-            mFilterType = V_FILTER_TYPE_GRAYSCALE;
+            mFilterType = FilterType.Grayscale;
         });
 
         mFilterBlackWhiteButton.setOnClickListener(v -> {
             hideColorPicker();
-            mFilterType = V_FILTER_TYPE_BLACK_WHITE;
+            mFilterType = FilterType.BlackWhite;
         });
 
         if (mDisableAutomaticCapture) {

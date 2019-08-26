@@ -1,16 +1,11 @@
 package devliving.online.cvscanner.browser;
 
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Matrix;
-import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -22,24 +17,18 @@ import androidx.fragment.app.FragmentStatePagerAdapter;
 import androidx.viewpager.widget.ViewPager;
 
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.Objects;
 
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.CVScanner;
-import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.DocumentData;
+import devliving.online.cvscanner.FilterType;
 import devliving.online.cvscanner.R;
 import devliving.online.cvscanner.crop.CropImageActivity;
-import devliving.online.cvscanner.scanner.DocumentScannerActivity;
 import devliving.online.cvscanner.util.Util;
 
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.REQ_CROP_IMAGE;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.REQ_SCAN;
 
@@ -154,7 +143,7 @@ public class DocumentBrowserFragment extends BaseFragment {
             return mDataList.get(position);
         }
 
-        void setFilterType(int position, int filterType) {
+        void setFilterType(int position, FilterType filterType) {
             getData(position).setFilterType(filterType);
         }
 
@@ -203,7 +192,7 @@ public class DocumentBrowserFragment extends BaseFragment {
         CVScanner.startScanner(getActivity(), false, true, false, data.getFilterType(), true, REQ_SCAN);
     }
 
-    private void setFilterType(int filterType) {
+    private void setFilterType(FilterType filterType) {
         mImagesAdapter.setFilterType(mPager.getCurrentItem(), filterType);
         updateImage();
     }
@@ -219,19 +208,19 @@ public class DocumentBrowserFragment extends BaseFragment {
     }
 
     private void onColorClick(View v) {
-        setFilterType(V_FILTER_TYPE_COLOR);
+        setFilterType(FilterType.Color);
     }
 
     private void onGrayscaleClick(View v) {
-        setFilterType(V_FILTER_TYPE_GRAYSCALE);
+        setFilterType(FilterType.Grayscale);
     }
 
     private void onBlackWhiteClick(View v) {
-        setFilterType(V_FILTER_TYPE_BLACK_WHITE);
+        setFilterType(FilterType.BlackWhite);
     }
 
     private void onPhotoClick(View v) {
-        setFilterType(V_FILTER_TYPE_PHOTO);
+        setFilterType(FilterType.Photo);
     }
 
     private void onFiltersClick(View v) {

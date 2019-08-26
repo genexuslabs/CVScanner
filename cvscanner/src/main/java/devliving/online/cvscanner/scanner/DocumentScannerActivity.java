@@ -25,10 +25,8 @@ import java.util.ArrayList;
 import devliving.online.cvscanner.BaseFragment;
 import devliving.online.cvscanner.CVScanner;
 import devliving.online.cvscanner.DocumentData;
+import devliving.online.cvscanner.FilterType;
 import devliving.online.cvscanner.R;
-import devliving.online.cvscanner.browser.DocumentBrowserActivity;
-
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
 
 /**
  * Created by Mehedi on 10/15/16.
@@ -110,7 +108,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
         boolean isScanningPassport = extras != null && getIntent().getBooleanExtra(EXTRA_IS_PASSPORT, false);
         boolean showFlash = extras != null && getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
         boolean disableAutomaticCapture = extras != null && getIntent().getBooleanExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, false);
-        int filterType = extras != null ? getIntent().getIntExtra(EXTRA_FILTER_TYPE, V_FILTER_TYPE_COLOR) : V_FILTER_TYPE_COLOR;
+        FilterType filterType = extras != null ? FilterType.values()[getIntent().getIntExtra(EXTRA_FILTER_TYPE, FilterType.Color.ordinal())] : FilterType.Color;
         boolean singleDocument = extras != null && getIntent().getBooleanExtra(EXTRA_SINGLE_DOCUMENT, false);
 
         if (extras != null) {

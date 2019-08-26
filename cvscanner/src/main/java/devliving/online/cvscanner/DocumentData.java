@@ -11,20 +11,16 @@ import org.opencv.core.Point;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Filter;
 
 import devliving.online.cvscanner.util.Util;
 
 public class DocumentData implements Parcelable {
-    public final static int V_FILTER_TYPE_COLOR = 0;
-    public final static int V_FILTER_TYPE_GRAYSCALE = 1;
-    public final static int V_FILTER_TYPE_BLACK_WHITE = 2;
-    public final static int V_FILTER_TYPE_PHOTO = 3;
-
     private Bitmap mOriginalImage;
     private Uri mOriginalImageUri;
     private int mRotation;
     private Point[] mPoints;
-    private int mFilterType;
+    private FilterType mFilterType;
     private Uri mImageUri;
 
     public static final Parcelable.Creator<DocumentData> CREATOR = new Parcelable.Creator<DocumentData>() {
@@ -46,21 +42,21 @@ public class DocumentData implements Parcelable {
         mPoints = new Point[pointLength];
         for (int n = 0; n < pointLength; n++)
             mPoints[n] = new Point(parcel.readDouble(), parcel.readDouble());
-        mFilterType = parcel.readInt();
+        mFilterType = FilterType.values()[parcel.readInt()];
         String imageUri = parcel.readString();
         if (!TextUtils.isEmpty(imageUri))
             mImageUri = Uri.parse(imageUri);
     }
 
-    public static DocumentData Create(Context context, Document document, int filterType) {
+    public static DocumentData Create(Context context, Document document, FilterType filterType) {
         return Create(context, document.getImage().getBitmap(), document.getImage().getMetadata().getRotation(), document.detectedQuad.points, filterType, true);
     }
 
-    public static DocumentData Create(Context context, Bitmap originalImage, int filterType) {
+    public static DocumentData Create(Context context, Bitmap originalImage, FilterType filterType) {
         return Create(context, originalImage, 0, new Point[0], filterType, true);
     }
 
-    public static DocumentData Create(Context context, Bitmap originalImage, int rotation, Point[] points, int filterType, boolean saveImage) {
+    public static DocumentData Create(Context context, Bitmap originalImage, int rotation, Point[] points, FilterType filterType, boolean saveImage) {
         try {
             Uri originalImageUri;
             if (saveImage) {
@@ -82,10 +78,10 @@ public class DocumentData implements Parcelable {
         try {
             rotation = Util.getExifRotation(context, imageUri);
         } catch (IOException ignored) { }
-        return new DocumentData(null, imageUri, rotation/90, new Point[0], V_FILTER_TYPE_COLOR);
+        return new DocumentData(null, imageUri, rotation/90, new Point[0], FilterType.Color);
     }
 
-    private DocumentData(Bitmap originalImage, Uri originalImageUri, int rotation, Point[] points, int filterType) {
+    private DocumentData(Bitmap originalImage, Uri originalImageUri, int rotation, Point[] points, FilterType filterType) {
         mOriginalImage = originalImage;
         mOriginalImageUri = originalImageUri;
         mRotation = rotation;
@@ -107,7 +103,7 @@ public class DocumentData implements Parcelable {
             dest.writeDouble(mPoints[n].x);
             dest.writeDouble(mPoints[n].y);
         }
-        dest.writeInt(mFilterType);
+        dest.writeInt(mFilterType.ordinal());
         dest.writeString(mImageUri != null ? mImageUri.toString() : "");
     }
 
@@ -140,11 +136,11 @@ public class DocumentData implements Parcelable {
         mPoints = points;
     }
 
-    public int getFilterType() {
+    public FilterType getFilterType() {
         return mFilterType;
     }
 
-    public void setFilterType(int filterType) {
+    public void setFilterType(FilterType filterType) {
         mFilterType = filterType;
     }
 

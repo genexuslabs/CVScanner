@@ -12,13 +12,7 @@ import org.opencv.core.Size;
 
 import java.io.IOException;
 
-import devliving.online.cvscanner.Document;
 import devliving.online.cvscanner.DocumentData;
-
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_BLACK_WHITE;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_COLOR;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_GRAYSCALE;
-import static devliving.online.cvscanner.DocumentData.V_FILTER_TYPE_PHOTO;
 
 /**
  * Created by Mehedi Hasan Khan <mehedi.mailing@gmail.com> on 8/30/17.
@@ -73,22 +67,22 @@ public class ImageSaveTask extends AsyncTask<Void, Void, String> {
         Mat enhancedImage;
 
         switch (mData.getFilterType()) {
-            case V_FILTER_TYPE_COLOR:
+            case Color:
             default:
                 Mat adjustedImage = CVProcessor.adjustBrightnessAndContrast(croppedImage, 1);
                 croppedImage.release();
                 enhancedImage = CVProcessor.sharpenImage(adjustedImage);
                 adjustedImage.release();
                 break;
-            case V_FILTER_TYPE_GRAYSCALE:
+            case Grayscale:
                 enhancedImage = CVProcessor.convertGrayscale(croppedImage);
                 croppedImage.release();
                 break;
-            case V_FILTER_TYPE_BLACK_WHITE:
+            case BlackWhite:
                 enhancedImage = CVProcessor.convertBlackAndWhite(croppedImage);
                 croppedImage.release();
                 break;
-            case V_FILTER_TYPE_PHOTO:
+            case Photo:
                 enhancedImage = croppedImage;
         }
 
