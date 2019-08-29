@@ -110,11 +110,15 @@ public final class Util {
 
         FileOutputStream fout = null;
         try {
+            Log.d("Scanner", "Saving image " + imageFile.getAbsolutePath());
             fout = new FileOutputStream(imageFile);
             bitmap.compress(Bitmap.CompressFormat.JPEG, 100, fout);
             fout.flush();
 
             imagePath = imageFile.getAbsolutePath();
+        }
+        catch (Exception e) {
+            Log.d("Scanner", "Failed to save image: " + e.getMessage());
         }
         finally {
             closeSilently(fout);

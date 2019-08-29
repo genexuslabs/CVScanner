@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import android.util.Log;
 
 import org.opencv.core.Point;
 
@@ -69,6 +70,7 @@ public class DocumentData implements Parcelable {
             }
             return new DocumentData(originalImage, originalImageUri, rotation, points, filterType);
         } catch (IOException e) {
+            Log.d("Scanner", "Fail to save image for DocumentData: " + e.getMessage());
             return null;
         }
     }
