@@ -49,6 +49,8 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
     public static final String EXTRA_SHOW_FLASH = "show_flash";
     public static final String EXTRA_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
     public static final String EXTRA_FILTER_TYPE = "filter_type";
+    public static final String EXTRA_ALLOW_FILTER_SELECTION = "allow_filter_selection";
+    public static final String EXTRA_ASPECT_RATIO = "aspect_ratio";
     public static final String EXTRA_SINGLE_DOCUMENT = "single_document";
 
     public static final int REQ_DOCUMENT_BROWSE = 12;
@@ -106,9 +108,11 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
     private void addScannerFragment() {
         Bundle extras = getIntent().getExtras();
         boolean isScanningPassport = extras != null && getIntent().getBooleanExtra(EXTRA_IS_PASSPORT, false);
-        boolean showFlash = extras != null && getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
+        boolean showFlash = extras == null || getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
         boolean disableAutomaticCapture = extras != null && getIntent().getBooleanExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, false);
         FilterType filterType = extras != null ? FilterType.values()[getIntent().getIntExtra(EXTRA_FILTER_TYPE, FilterType.Color.ordinal())] : FilterType.Color;
+        boolean allowFilterSelection = extras == null || getIntent().getBooleanExtra(EXTRA_ALLOW_FILTER_SELECTION, true);
+        double aspectRatio = extras != null ? getIntent().getDoubleExtra(EXTRA_ASPECT_RATIO, 0) : 0;
         boolean singleDocument = extras != null && getIntent().getBooleanExtra(EXTRA_SINGLE_DOCUMENT, false);
 
         if (extras != null) {
@@ -117,9 +121,9 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
             int torchTintColor = extras.getInt(EXTRA_TORCH_TINT_COLOR, getResources().getColor(R.color.dark_gray));
             int torchTintLightColor = extras.getInt(EXTRA_TORCH_TINT_COLOR_LIGHT, getResources().getColor(R.color.torch_yellow));
 
-            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
         } else {
-            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, singleDocument);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument);
         }
 
         getSupportFragmentManager().beginTransaction()

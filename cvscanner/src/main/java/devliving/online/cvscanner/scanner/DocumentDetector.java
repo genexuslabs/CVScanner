@@ -23,10 +23,12 @@ import devliving.online.cvscanner.util.CVProcessor;
  */
 public class DocumentDetector extends Detector<Document> {
 
-    Context mContext;
+    private double mAspectRatio;
+    private Context mContext;
 
-    public DocumentDetector(Context context){
+    public DocumentDetector(double aspectRatio, Context context) {
         super();
+        mAspectRatio = aspectRatio;
         mContext = context;
     }
 
@@ -71,9 +73,10 @@ public class DocumentDetector extends Detector<Document> {
                 double ratio = dh < dw ? dh / dw : dw / dh;
                 Log.i("RATIO", Double.toString(ratio));
 
-                //double test = 0.582; // Card
-                //if (ratio >= test * 0.9 && ratio <= test * 1.1)
+                if (mAspectRatio == 0 ||
+                        ratio >= mAspectRatio * 0.9 && ratio <= mAspectRatio * 1.1) {
                     return new Document(frame, quad);
+                }
             }
         }
 

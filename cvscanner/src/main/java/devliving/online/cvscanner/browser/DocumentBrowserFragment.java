@@ -189,7 +189,7 @@ public class DocumentBrowserFragment extends BaseFragment {
 
     private void onRetakeClick(View v) {
         DocumentData data = mDataList.get(mPager.getCurrentItem());
-        CVScanner.startScanner(getActivity(), false, true, false, data.getFilterType(), true, REQ_SCAN);
+        CVScanner.startScanner(getActivity(), false, true, false, data.getFilterType(), true, 0, true, REQ_SCAN);
     }
 
     private void setFilterType(FilterType filterType) {

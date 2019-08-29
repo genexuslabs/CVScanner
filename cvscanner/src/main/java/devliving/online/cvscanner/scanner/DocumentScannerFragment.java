@@ -53,6 +53,7 @@ import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
+import static android.view.View.GONE;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.EXTRA_DATA_LIST;
 import static devliving.online.cvscanner.scanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
 
@@ -64,6 +65,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static String ARG_SHOW_FLASH = "show_flash";
     private final static String ARG_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
     private final static String ARG_FILTER_TYPE = "filter_type";
+    private final static String ARG_ALLOW_FILTER_SELECTION = "allow_filter_selection";
+    private final static String ARG_ASPECT_RATIO = "aspect_ratio";
     private final static String ARG_SINGLE_DOCUMENT = "single_document";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
@@ -79,6 +82,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private ImageButton mFlashToggle;
     private boolean mDisableAutomaticCapture;
     private FilterType mFilterType;
+    private boolean mAllowFilterSelection;
+    private double mAspectRatio;
     private boolean mSingleDocument;
 
     private ImageButton mTakePictureButton;
@@ -114,19 +119,21 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static int AUTO_SCAN_THRESHOLD = 3;
     private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         args.putInt(ARG_FILTER_TYPE, filterType.ordinal());
+        args.putBoolean(ARG_ALLOW_FILTER_SELECTION, allowFilterSelection);
+        args.putDouble(ARG_ASPECT_RATIO, aspectRatio);
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument,
                                                       @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
@@ -134,6 +141,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         args.putBoolean(ARG_SHOW_FLASH, showFlash);
         args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         args.putInt(ARG_FILTER_TYPE, filterType.ordinal());
+        args.putBoolean(ARG_ALLOW_FILTER_SELECTION, allowFilterSelection);
+        args.putDouble(ARG_ASPECT_RATIO, aspectRatio);
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
@@ -206,9 +215,11 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     protected void onAfterViewCreated() {
         Bundle args = getArguments();
         isPassport = args != null && args.getBoolean(ARG_IS_PASSPORT, false);
-        mShowFlash = args != null && args.getBoolean(ARG_SHOW_FLASH, true);
+        mShowFlash = args == null || args.getBoolean(ARG_SHOW_FLASH, true);
         mDisableAutomaticCapture = args != null && args.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
         mFilterType = args != null ? FilterType.values()[args.getInt(ARG_FILTER_TYPE, FilterType.Color.ordinal())] : FilterType.Color;
+        mAllowFilterSelection = args == null || args.getBoolean(ARG_ALLOW_FILTER_SELECTION, true);
+        mAspectRatio = args != null ? args.getDouble(ARG_ASPECT_RATIO, 0) : 0;
         mSingleDocument = args != null && args.getBoolean(ARG_SINGLE_DOCUMENT, true);
 
         Resources.Theme theme = Objects.requireNonNull(getActivity()).getTheme();
@@ -243,7 +254,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 }
             });
         } else {
-            mFlashToggle.setVisibility(View.GONE);
+            mFlashToggle.setVisibility(GONE);
         }
 
         mTakePictureButton.setOnClickListener(v -> {
@@ -251,37 +262,41 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), this::detectDocumentManually);
         });
 
-        mFiltersButton.setOnClickListener(v -> {
-            mTopPanel.setVisibility(View.GONE);
-            mCancelButton.setVisibility(View.GONE);
-            mManualButton.setVisibility(View.GONE);
-            mFiltersPanel.setVisibility(View.VISIBLE);
-            mFilterColorButton.setTextColor(mFilterType == FilterType.Color ? Color.YELLOW : Color.WHITE);
-            mFilterGrayscaleButton.setTextColor(mFilterType == FilterType.Grayscale ? Color.YELLOW : Color.WHITE);
-            mFilterBlackWhiteButton.setTextColor(mFilterType == FilterType.BlackWhite ? Color.YELLOW : Color.WHITE);
-        });
+        if (!mAllowFilterSelection) {
+            mFiltersButton.setVisibility(GONE);
+        } else {
+            mFiltersButton.setOnClickListener(v -> {
+                mTopPanel.setVisibility(GONE);
+                mCancelButton.setVisibility(GONE);
+                mManualButton.setVisibility(GONE);
+                mFiltersPanel.setVisibility(View.VISIBLE);
+                mFilterColorButton.setTextColor(mFilterType == FilterType.Color ? Color.YELLOW : Color.WHITE);
+                mFilterGrayscaleButton.setTextColor(mFilterType == FilterType.Grayscale ? Color.YELLOW : Color.WHITE);
+                mFilterBlackWhiteButton.setTextColor(mFilterType == FilterType.BlackWhite ? Color.YELLOW : Color.WHITE);
+            });
 
-        mFiltersCloseButton.setOnClickListener(v -> {
-            hideColorPicker();
-        });
+            mFiltersCloseButton.setOnClickListener(v -> {
+                hideColorPicker();
+            });
 
-        mFilterColorButton.setOnClickListener(v -> {
-            hideColorPicker();
-            mFilterType = FilterType.Color;
-        });
+            mFilterColorButton.setOnClickListener(v -> {
+                hideColorPicker();
+                mFilterType = FilterType.Color;
+            });
 
-        mFilterGrayscaleButton.setOnClickListener(v -> {
-            hideColorPicker();
-            mFilterType = FilterType.Grayscale;
-        });
+            mFilterGrayscaleButton.setOnClickListener(v -> {
+                hideColorPicker();
+                mFilterType = FilterType.Grayscale;
+            });
 
-        mFilterBlackWhiteButton.setOnClickListener(v -> {
-            hideColorPicker();
-            mFilterType = FilterType.BlackWhite;
-        });
+            mFilterBlackWhiteButton.setOnClickListener(v -> {
+                hideColorPicker();
+                mFilterType = FilterType.BlackWhite;
+            });
+        }
 
         if (mDisableAutomaticCapture) {
-            mManualButton.setVisibility(View.GONE);
+            mManualButton.setVisibility(GONE);
         } else {
             mManualButton.setOnClickListener(v -> {
                 if (mManual)
@@ -319,7 +334,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mTopPanel.setVisibility(View.VISIBLE);
         mCancelButton.setVisibility(View.VISIBLE);
         mManualButton.setVisibility(View.VISIBLE);
-        mFiltersPanel.setVisibility(View.GONE);
+        mFiltersPanel.setVisibility(GONE);
     }
 
     @Override
@@ -368,7 +383,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         if (isPassport)
             IDDetector = new PassportDetector(mFrameSizeProvider);
         else
-            IDDetector = new DocumentDetector(getContext());
+            IDDetector = new DocumentDetector(mAspectRatio, getContext());
 
         /*
         DocumentTrackerFactory factory = new DocumentTrackerFactory(mGraphicOverlay, this);
@@ -535,7 +550,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                                 mDocumentsButton.setVisibility(View.VISIBLE);
                                 mDoneButton.setVisibility(View.VISIBLE);
                                 mDocumentsButton.setImageBitmap(bitmap);
-                                mAnimationImage.setVisibility(View.GONE);
+                                mAnimationImage.setVisibility(GONE);
                             }));
         }
     }
@@ -620,8 +635,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     void setDataList(ArrayList<DocumentData> dataList) {
         mDataList = dataList;
         if (dataList.size() == 0) {
-            mDocumentsButton.setVisibility(View.GONE);
-            mDoneButton.setVisibility(View.GONE);
+            mDocumentsButton.setVisibility(GONE);
+            mDoneButton.setVisibility(GONE);
         } else {
             mDocumentsButton.setImageURI(dataList.get(dataList.size() - 1).getImageUri());
         }

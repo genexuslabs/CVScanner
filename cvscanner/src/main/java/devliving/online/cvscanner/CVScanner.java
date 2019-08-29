@@ -53,23 +53,27 @@ public final class CVScanner {
         return null;
     }
 
-    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument, int reqCode) {
+    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument, int reqCode) {
         Intent i = new Intent(activity, DocumentScannerActivity.class);
         i.putExtra(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
         i.putExtra(DocumentScannerActivity.EXTRA_SHOW_FLASH, showFlash);
         i.putExtra(DocumentScannerActivity.EXTRA_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         i.putExtra(DocumentScannerActivity.EXTRA_FILTER_TYPE, filterType.ordinal());
+        i.putExtra(DocumentScannerActivity.EXTRA_ALLOW_FILTER_SELECTION, allowFilterSelection);
+        i.putExtra(DocumentScannerActivity.EXTRA_ASPECT_RATIO, aspectRatio);
         i.putExtra(DocumentScannerActivity.EXTRA_SINGLE_DOCUMENT, singleDocument);
         activity.startActivityForResult(i, reqCode);
     }
 
-    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument, int reqCode,
+    public static void startScanner(Activity activity, boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument, int reqCode,
                                     @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         Intent i = new Intent(activity, DocumentScannerActivity.class);
         i.putExtra(DocumentScannerActivity.EXTRA_IS_PASSPORT, isPassport);
         i.putExtra(DocumentScannerActivity.EXTRA_SHOW_FLASH, showFlash);
         i.putExtra(DocumentScannerActivity.EXTRA_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
         i.putExtra(DocumentScannerActivity.EXTRA_FILTER_TYPE, filterType.ordinal());
+        i.putExtra(DocumentScannerActivity.EXTRA_ALLOW_FILTER_SELECTION, allowFilterSelection);
+        i.putExtra(DocumentScannerActivity.EXTRA_ASPECT_RATIO, allowFilterSelection);
         i.putExtra(DocumentScannerActivity.EXTRA_SINGLE_DOCUMENT, singleDocument);
         i.putExtra(DocumentScannerActivity.EXTRA_DOCUMENT_BODY_COLOR, docBodyColorRes);
         i.putExtra(DocumentScannerActivity.EXTRA_DOCUMENT_BORDER_COLOR, docBorderColorRes);

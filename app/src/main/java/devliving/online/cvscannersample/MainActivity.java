@@ -52,7 +52,7 @@ public class MainActivity extends AppCompatActivity {
 
         FloatingActionButton fabScan = findViewById(R.id.action_scan);
         fabScan.setOnClickListener(view ->
-                CVScanner.startScanner(this, false, true, false, FilterType.Color, false, REQ_SCAN));
+                CVScanner.startScanner(this, false, true, false, FilterType.Color, true, 0, false, REQ_SCAN));
 
         FloatingActionButton fabCrop = findViewById(R.id.action_crop);
         fabCrop.setOnClickListener(view -> new AlertDialog.Builder(MainActivity.this)
@@ -62,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
                 .show());
     }
 
-    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean singleDocument) {
-        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, filterType, singleDocument, REQ_SCAN);
+    void startScannerIntent(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowTypeSelection, double aspectRatio, boolean singleDocument) {
+        CVScanner.startScanner(this, isPassport, showFlash, disableAutomaticCapture, filterType, allowTypeSelection, aspectRatio, singleDocument, REQ_SCAN);
     }
 
     private void startCameraIntent(){
