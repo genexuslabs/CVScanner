@@ -8,7 +8,11 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.drawable.shapes.PathShape;
 import android.hardware.Camera;
 import android.media.MediaActionSound;
 import android.os.Build;
@@ -48,12 +52,15 @@ import devliving.online.cvscanner.FilterType;
 import devliving.online.cvscanner.browser.DocumentBrowserActivity;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
+import devliving.online.cvscanner.util.CVProcessor;
+import online.devliving.mobilevisionpipeline.FrameGraphic;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
 import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 
 import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.EXTRA_DATA_LIST;
 import static devliving.online.cvscanner.scanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
 
@@ -258,6 +265,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
 
         mTakePictureButton.setOnClickListener(v -> {
+            mTakePictureButton.setVisibility(GONE);
             if (mCameraSource != null)
                 mCameraSource.takePicture(() -> sound.play(MediaActionSound.SHUTTER_CLICK), this::detectDocumentManually);
         });
@@ -269,7 +277,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 mTopPanel.setVisibility(GONE);
                 mCancelButton.setVisibility(GONE);
                 mManualButton.setVisibility(GONE);
-                mFiltersPanel.setVisibility(View.VISIBLE);
+                mFiltersPanel.setVisibility(VISIBLE);
                 mFilterColorButton.setTextColor(mFilterType == FilterType.Color ? Color.YELLOW : Color.WHITE);
                 mFilterGrayscaleButton.setTextColor(mFilterType == FilterType.Grayscale ? Color.YELLOW : Color.WHITE);
                 mFilterBlackWhiteButton.setTextColor(mFilterType == FilterType.BlackWhite ? Color.YELLOW : Color.WHITE);
@@ -323,17 +331,17 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             });
 
             if (mDataList != null && mDataList.size() > 0) {
-                mDocumentsButton.setVisibility(View.VISIBLE);
-                mDoneButton.setVisibility(View.VISIBLE);
+                mDocumentsButton.setVisibility(VISIBLE);
+                mDoneButton.setVisibility(VISIBLE);
                 mDocumentsButton.setImageURI(mDataList.get(mDataList.size() - 1).getImageUri());
             }
         }
     }
 
     private void hideColorPicker() {
-        mTopPanel.setVisibility(View.VISIBLE);
-        mCancelButton.setVisibility(View.VISIBLE);
-        mManualButton.setVisibility(View.VISIBLE);
+        mTopPanel.setVisibility(VISIBLE);
+        mCancelButton.setVisibility(VISIBLE);
+        mManualButton.setVisibility(VISIBLE);
         mFiltersPanel.setVisibility(GONE);
     }
 
@@ -464,8 +472,14 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         }
     }
 
-    private void processDocument(Document document) {
-        processDocumentData(DocumentData.Create(getContext(), document, mFilterType));
+    private void processDocument(Document document, boolean manual) {
+        DocumentData data = DocumentData.Create(getContext(), document, mFilterType);
+        if (manual) {
+            double scaleFactor = mCameraSource.getPreviewSize().getWidth() / (double)data.getHeight();
+            Point[] points = CVProcessor.getUpscaledPoints(data.getPoints(), scaleFactor);
+            data.setPreviewPoints(points);
+        }
+        processDocumentData(data);
     }
 
     private void processImage(Bitmap image) {
@@ -490,41 +504,58 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             // Add animation
             final Bitmap bitmap = BitmapFactory.decodeFile(path);
 
+            float centerX, centerY, rotation;
+            float scaleStart, scaleMiddle, scaleEnd;
+            FrameLayout.LayoutParams documentButtonParams = (FrameLayout.LayoutParams) mDocumentsButton.getLayoutParams();
+
             Point center = new Point();
-            Point[] points = mDataList.get(mDataList.size() - 1).getPoints();
-            for (Point point : points) {
-                center.x += point.x;
-                center.y += point.y;
+            boolean needTransformCenter = false;
+            Point[] points = mDataList.get(mDataList.size() - 1).getPreviewPoints(); // Manually captured
+            if (points == null) {
+                points = mDataList.get(mDataList.size() - 1).getPoints();
+                needTransformCenter = true;
             }
-            center.x /= points.length;
-            center.y /= points.length;
+            if (points.length > 0) {
+                for (Point point : points) {
+                    center.x += point.x;
+                    center.y += point.y;
+                }
+                center.x /= points.length;
+                center.y /= points.length;
 
-            final int screenRotation = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
-            Size cameraSize = mCameraSource.getPreviewSize();
-            if (DocumentGraphic.isPortrait(screenRotation))
-                cameraSize = new Size(cameraSize.getHeight(), cameraSize.getWidth());
+                if (needTransformCenter) {
+                    final int screenRotation = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+                    Size cameraSize = mCameraSource.getPreviewSize();
+                    if (DocumentGraphic.isPortrait(screenRotation))
+                        cameraSize = new Size(cameraSize.getHeight(), cameraSize.getWidth());
 
-            float centerX = DocumentGraphic.getX(mPreview.getHeight(), mPreview.getWidth(), screenRotation, center) * mPreview.getWidth() / (float)cameraSize.getWidth();
-            float centerY = DocumentGraphic.getY(mPreview.getHeight(), mPreview.getWidth(), screenRotation, center) * mPreview.getHeight() / (float)cameraSize.getHeight();
+                    centerX = DocumentGraphic.getX(mPreview.getHeight(), mPreview.getWidth(), screenRotation, center) * mPreview.getWidth() / (float) cameraSize.getWidth();
+                    centerY = DocumentGraphic.getY(mPreview.getHeight(), mPreview.getWidth(), screenRotation, center) * mPreview.getHeight() / (float) cameraSize.getHeight();
+                } else {
+                    centerX = (float)center.x;
+                    centerY = (float)center.y;
+                }
 
-            int captureWidth = (int)(Math.max(points[1].x, points[2].x) - Math.min(points[0].x, points[3].x));
-            int captureHeight = (int)(Math.max(points[2].y, points[3].y) - Math.min(points[0].y, points[1].y));
-            Size captureSize;
-            if (DocumentGraphic.isPortrait(screenRotation))
-                captureSize = new Size(captureHeight, captureWidth);
-            else
-                captureSize = new Size(captureHeight, captureWidth);
+                int captureWidth = (int) (Math.max(points[1].x, points[2].x) - Math.min(points[0].x, points[3].x));
+                int captureHeight = (int) (Math.max(points[2].y, points[3].y) - Math.min(points[0].y, points[1].y));
+                Size captureSize = new Size(captureHeight, captureWidth);
 
-            float rotation = 0;
-            if (points[0].x != points[1].x)
-                rotation = (float) Math.toDegrees(Math.atan((points[1].y - points[0].y) / (points[1].x - points[0].x)));
+                rotation = 0;
+                if (points[0].x != points[1].x)
+                    rotation = (float) Math.toDegrees(Math.atan((points[1].y - points[0].y) / (points[1].x - points[0].x)));
 
-            FrameLayout.LayoutParams documentButtonParams = (FrameLayout.LayoutParams)mDocumentsButton.getLayoutParams();
-            float scaleStart = (captureSize.getWidth() / (float)bitmap.getWidth() + captureSize.getHeight() / (float)bitmap.getHeight()) / 2f;
-            float scaleMiddle = Math.min(mPreview.getWidth() * .9f / bitmap.getWidth(), mPreview.getHeight() * .7f / bitmap.getHeight());
-            float scaleEnd = Math.max(documentButtonParams.width / (float)bitmap.getWidth(), documentButtonParams.height / (float)bitmap.getHeight());
+                scaleStart = (captureSize.getWidth() / (float) bitmap.getWidth() + captureSize.getHeight() / (float) bitmap.getHeight()) / 2f;
+                scaleMiddle = Math.min(mPreview.getWidth() * .9f / bitmap.getWidth(), mPreview.getHeight() * .7f / bitmap.getHeight());
+            } else {
+                centerX = mPreview.getWidth() / 2f;
+                centerY = mPreview.getHeight() / 2f;
+                rotation = 0;
+                scaleStart = .8f;
+                scaleMiddle = .9f;
+            }
+            scaleEnd = Math.max(documentButtonParams.width / (float) bitmap.getWidth(), documentButtonParams.height / (float) bitmap.getHeight());
 
-            mAnimationImage.setVisibility(View.VISIBLE);
+            mAnimationImage.setVisibility(VISIBLE);
             mAnimationImage.setImageBitmap(bitmap);
             mAnimationImage.setTranslationX(centerX - mPreview.getWidth() / 2f);
             mAnimationImage.setTranslationY(centerY - mPreview.getHeight() / 2f);
@@ -547,8 +578,9 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                             .setDuration(400)
                             .withEndAction(() -> {
                                 // Enable buttons after animation
-                                mDocumentsButton.setVisibility(View.VISIBLE);
-                                mDoneButton.setVisibility(View.VISIBLE);
+                                mDocumentsButton.setVisibility(VISIBLE);
+                                mDoneButton.setVisibility(VISIBLE);
+                                mTakePictureButton.setVisibility(VISIBLE);
                                 mDocumentsButton.setImageBitmap(bitmap);
                                 mAnimationImage.setVisibility(GONE);
                             }));
@@ -605,7 +637,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 sound.play(MediaActionSound.SHUTTER_CLICK);
                 assert getActivity() != null;
                 getActivity().runOnUiThread(() -> {
-                    processDocument(document);
+                    processDocument(document, false);
                 });
             }
         }
@@ -624,7 +656,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 if (docs != null && docs.size() > 0) {
                     Log.d("Scanner", "detected document manually");
                     final Document document = docs.get(0);
-                    getActivity().runOnUiThread(() -> processDocument(document));
+                    getActivity().runOnUiThread(() -> processDocument(document, true));
                 } else {
                     getActivity().runOnUiThread(() -> processImage(image));
                 }

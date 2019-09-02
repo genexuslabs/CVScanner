@@ -21,6 +21,7 @@ public class DocumentData implements Parcelable {
     private Uri mOriginalImageUri;
     private int mRotation;
     private Point[] mPoints;
+    private Point[] mPreviewPoints;
     private FilterType mFilterType;
     private Uri mImageUri;
 
@@ -136,6 +137,22 @@ public class DocumentData implements Parcelable {
 
     public void setPoints(Point[] points) {
         mPoints = points;
+    }
+
+    public void setPreviewPoints(Point[] points) {
+        mPreviewPoints = points;
+    }
+
+    public Point[] getPreviewPoints() {
+        return mPreviewPoints;
+    }
+
+    public int getWidth() {
+        return mOriginalImage.getWidth();
+    }
+
+    public int getHeight() {
+        return mOriginalImage.getHeight();
     }
 
     public FilterType getFilterType() {

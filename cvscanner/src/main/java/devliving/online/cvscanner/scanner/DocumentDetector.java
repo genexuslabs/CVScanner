@@ -57,6 +57,7 @@ public class DocumentDetector extends Detector<Document> {
             if (quad != null) {
                 quad.points = CVProcessor.getUpscaledPoints(quad.points, CVProcessor.getScaleRatio(imageSize));
 
+                // Check Ratio
                 Point tl = quad.points[0];
                 Point tr = quad.points[1];
                 Point br = quad.points[2];
