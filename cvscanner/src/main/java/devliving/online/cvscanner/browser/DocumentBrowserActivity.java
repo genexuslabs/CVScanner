@@ -15,6 +15,10 @@ import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 
 import static devliving.online.cvscanner.CVScanner.RESULT_DATA_LIST;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_ALLOW_FILTER_SELECTION;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_ASPECT_RATIO;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_DISABLE_AUTOMATIC_CAPTURE;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_SHOW_FLASH;
 
 public class DocumentBrowserActivity extends FragmentActivity implements BaseFragment.ImageProcessorCallback {
     public static String EXTRA_DATA_LIST = "document_data_list";
@@ -40,11 +44,15 @@ public class DocumentBrowserActivity extends FragmentActivity implements BaseFra
 
     private void addBrowserFragment() {
         ArrayList<DocumentData> dataList = getIntent().getParcelableArrayListExtra(EXTRA_DATA_LIST);
+        boolean showFlash = getIntent().getBooleanExtra(EXTRA_SHOW_FLASH, true);
+        boolean disableAutomaticCapture = getIntent().getBooleanExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, false);
+        boolean allowFilterSelection = getIntent().getBooleanExtra(EXTRA_ALLOW_FILTER_SELECTION, true);
+        double aspectRatio = getIntent().getDoubleExtra(EXTRA_ASPECT_RATIO, 0);
         if (dataList == null) {
             setResult(RESULT_CANCELED);
             finish();
         } else {
-            mFragment = DocumentBrowserFragment.instantiate(dataList);
+            mFragment = DocumentBrowserFragment.instantiate(dataList, showFlash, disableAutomaticCapture, allowFilterSelection, aspectRatio);
             getSupportFragmentManager().beginTransaction()
                     .add(R.id.container, mFragment)
                     .commitAllowingStateLoss();

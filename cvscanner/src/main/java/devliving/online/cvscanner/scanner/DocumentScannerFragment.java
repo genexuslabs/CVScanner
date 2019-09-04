@@ -8,11 +8,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.drawable.shapes.PathShape;
 import android.hardware.Camera;
 import android.media.MediaActionSound;
 import android.os.Build;
@@ -53,7 +49,6 @@ import devliving.online.cvscanner.browser.DocumentBrowserActivity;
 import devliving.online.cvscanner.DocumentData;
 import devliving.online.cvscanner.R;
 import devliving.online.cvscanner.util.CVProcessor;
-import online.devliving.mobilevisionpipeline.FrameGraphic;
 import online.devliving.mobilevisionpipeline.GraphicOverlay;
 import online.devliving.mobilevisionpipeline.Util;
 import online.devliving.mobilevisionpipeline.camera.CameraSource;
@@ -62,6 +57,10 @@ import online.devliving.mobilevisionpipeline.camera.CameraSourcePreview;
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
 import static devliving.online.cvscanner.browser.DocumentBrowserActivity.EXTRA_DATA_LIST;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_ALLOW_FILTER_SELECTION;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_ASPECT_RATIO;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_DISABLE_AUTOMATIC_CAPTURE;
+import static devliving.online.cvscanner.scanner.DocumentScannerActivity.EXTRA_SHOW_FLASH;
 import static devliving.online.cvscanner.scanner.DocumentScannerActivity.REQ_DOCUMENT_BROWSE;
 
 /**
@@ -323,6 +322,10 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
             mDocumentsButton.setOnClickListener(v -> {
                 Intent intent = new Intent(getContext(), DocumentBrowserActivity.class);
                 intent.putParcelableArrayListExtra(EXTRA_DATA_LIST, mDataList);
+                intent.putExtra(EXTRA_SHOW_FLASH, mShowFlash);
+                intent.putExtra(EXTRA_DISABLE_AUTOMATIC_CAPTURE, mDisableAutomaticCapture);
+                intent.putExtra(EXTRA_ALLOW_FILTER_SELECTION, mAllowFilterSelection);
+                intent.putExtra(EXTRA_ASPECT_RATIO, mAspectRatio);
                 getActivity().startActivityForResult(intent, REQ_DOCUMENT_BROWSE);
             });
 

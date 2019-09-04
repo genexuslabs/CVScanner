@@ -37,13 +37,25 @@ public class DocumentBrowserFragment extends BaseFragment {
     private View mFiltersPanel;
     private ViewPager mPager;
     private ImagesPagerAdapter mImagesAdapter;
+    private boolean mShowFlash;
+    private boolean mDisableAutomaticCapture;
+    private boolean mAllowFilterSelection;
+    private double mAspectRatio;
 
-    private static String ARG_DATA_LIST = "document_data_list";
+    private final static String ARG_DATA_LIST = "document_data_list";
+    private final static String ARG_SHOW_FLASH = "show_flash";
+    private final static String ARG_DISABLE_AUTOMATIC_CAPTURE = "disable_automatic_capture";
+    private final static String ARG_ALLOW_FILTER_SELECTION = "allow_filter_selection";
+    private final static String ARG_ASPECT_RATIO = "aspect_ratio";
 
-    public static DocumentBrowserFragment instantiate(ArrayList<DocumentData> dataList) {
+    public static DocumentBrowserFragment instantiate(ArrayList<DocumentData> dataList, boolean showFlash, boolean disableAutomaticCapture, boolean allowFilterSelection, double aspectRatio) {
         DocumentBrowserFragment fragment = new DocumentBrowserFragment();
         Bundle args = new Bundle();
         args.putParcelableArrayList(ARG_DATA_LIST, dataList);
+        args.putBoolean(ARG_SHOW_FLASH, showFlash);
+        args.putBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, disableAutomaticCapture);
+        args.putBoolean(ARG_ALLOW_FILTER_SELECTION, allowFilterSelection);
+        args.putDouble(ARG_ASPECT_RATIO, aspectRatio);
         fragment.setArguments(args);
         return fragment;
     }
@@ -70,6 +82,10 @@ public class DocumentBrowserFragment extends BaseFragment {
         Bundle extras = getArguments();
         assert extras != null;
         mDataList = extras.getParcelableArrayList(ARG_DATA_LIST);
+        mShowFlash = extras.getBoolean(ARG_SHOW_FLASH, true);
+        mDisableAutomaticCapture = extras.getBoolean(ARG_DISABLE_AUTOMATIC_CAPTURE, false);
+        mAllowFilterSelection = extras.getBoolean(ARG_ALLOW_FILTER_SELECTION, true);
+        mAspectRatio = extras.getDouble(ARG_ASPECT_RATIO, 0);
 
         view.findViewById(R.id.done).setOnClickListener(this::onDoneClick);
         view.findViewById(R.id.retake).setOnClickListener(this::onRetakeClick);
@@ -189,7 +205,7 @@ public class DocumentBrowserFragment extends BaseFragment {
 
     private void onRetakeClick(View v) {
         DocumentData data = mDataList.get(mPager.getCurrentItem());
-        CVScanner.startScanner(getActivity(), false, true, false, data.getFilterType(), true, 0, true, REQ_SCAN);
+        CVScanner.startScanner(getActivity(), false, mShowFlash, mDisableAutomaticCapture, data.getFilterType(), mAllowFilterSelection, mAspectRatio, true, REQ_SCAN);
     }
 
     private void setFilterType(FilterType filterType) {
