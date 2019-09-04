@@ -52,6 +52,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
     public static final String EXTRA_ALLOW_FILTER_SELECTION = "allow_filter_selection";
     public static final String EXTRA_ASPECT_RATIO = "aspect_ratio";
     public static final String EXTRA_SINGLE_DOCUMENT = "single_document";
+    public static final String EXTRA_MAXIMUM_SCANS = "maximum_scans";
 
     public static final int REQ_DOCUMENT_BROWSE = 12;
 
@@ -114,6 +115,7 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
         boolean allowFilterSelection = extras == null || getIntent().getBooleanExtra(EXTRA_ALLOW_FILTER_SELECTION, true);
         double aspectRatio = extras != null ? getIntent().getDoubleExtra(EXTRA_ASPECT_RATIO, 0) : 0;
         boolean singleDocument = extras != null && getIntent().getBooleanExtra(EXTRA_SINGLE_DOCUMENT, false);
+        int maximumScans = extras != null ? getIntent().getIntExtra(EXTRA_MAXIMUM_SCANS, 0) : 0;
 
         if (extras != null) {
             int borderColor = extras.getInt(EXTRA_DOCUMENT_BORDER_COLOR, -1);
@@ -121,9 +123,9 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
             int torchTintColor = extras.getInt(EXTRA_TORCH_TINT_COLOR, getResources().getColor(R.color.dark_gray));
             int torchTintLightColor = extras.getInt(EXTRA_TORCH_TINT_COLOR_LIGHT, getResources().getColor(R.color.torch_yellow));
 
-            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument, borderColor, bodyColor, torchTintColor, torchTintLightColor);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument, maximumScans, borderColor, bodyColor, torchTintColor, torchTintLightColor);
         } else {
-            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument);
+            mFragment = DocumentScannerFragment.instantiate(isScanningPassport, showFlash, disableAutomaticCapture, filterType, allowFilterSelection, aspectRatio, singleDocument, maximumScans);
         }
 
         getSupportFragmentManager().beginTransaction()
@@ -140,7 +142,6 @@ public class DocumentScannerActivity extends AppCompatActivity implements BaseFr
             mFragment.setDataList(dataList);
         }
     }
-
 
     /**
      * Handles the requesting of the camera permission.  This includes

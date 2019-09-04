@@ -169,8 +169,10 @@ public class DocumentBrowserFragment extends BaseFragment {
         }
 
         void remove(int position) {
-            mDataList.remove(position);
-            notifyDataSetChanged();
+            if (position < mDataList.size()) {
+                mDataList.remove(position);
+                notifyDataSetChanged();
+            }
         }
     }
 
@@ -205,7 +207,7 @@ public class DocumentBrowserFragment extends BaseFragment {
 
     private void onRetakeClick(View v) {
         DocumentData data = mDataList.get(mPager.getCurrentItem());
-        CVScanner.startScanner(getActivity(), false, mShowFlash, mDisableAutomaticCapture, data.getFilterType(), mAllowFilterSelection, mAspectRatio, true, REQ_SCAN);
+        CVScanner.startScanner(getActivity(), false, mShowFlash, mDisableAutomaticCapture, data.getFilterType(), mAllowFilterSelection, mAspectRatio, true, 0, REQ_SCAN);
     }
 
     private void setFilterType(FilterType filterType) {

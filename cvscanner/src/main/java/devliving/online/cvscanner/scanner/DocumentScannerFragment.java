@@ -74,6 +74,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static String ARG_ALLOW_FILTER_SELECTION = "allow_filter_selection";
     private final static String ARG_ASPECT_RATIO = "aspect_ratio";
     private final static String ARG_SINGLE_DOCUMENT = "single_document";
+    private final static String ARG_MAXIMUM_SCANS = "maximum_scans";
     private final static String ARG_TORCH_COLOR = "torch_color";
     private final static String ARG_TORCH_COLOR_LIGHT = "torch_color_light";
     private final static String ARG_DOC_BORDER_COLOR = "doc_border_color";
@@ -91,6 +92,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private boolean mAllowFilterSelection;
     private double mAspectRatio;
     private boolean mSingleDocument;
+    private int mMaximumScans;
 
     private ImageButton mTakePictureButton;
     private Button mCancelButton;
@@ -125,7 +127,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private final static int AUTO_SCAN_THRESHOLD = 3;
     private final static double MATCHING_THRESHOLD_SQUARED = 50.0 * 50.0;
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument) {
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument, int maximumScans) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
         args.putBoolean(ARG_IS_PASSPORT, isPassport);
@@ -135,11 +137,12 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         args.putBoolean(ARG_ALLOW_FILTER_SELECTION, allowFilterSelection);
         args.putDouble(ARG_ASPECT_RATIO, aspectRatio);
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
+        args.putInt(ARG_MAXIMUM_SCANS, maximumScans);
         fragment.setArguments(args);
         return fragment;
     }
 
-    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument,
+    public static DocumentScannerFragment instantiate(boolean isPassport, boolean showFlash, boolean disableAutomaticCapture, FilterType filterType, boolean allowFilterSelection, double aspectRatio, boolean singleDocument, int maximumScans,
                                                       @ColorRes int docBorderColorRes, @ColorRes int docBodyColorRes, @ColorRes int torchColor, @ColorRes int torchColorLight) {
         DocumentScannerFragment fragment = new DocumentScannerFragment();
         Bundle args = new Bundle();
@@ -150,6 +153,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         args.putBoolean(ARG_ALLOW_FILTER_SELECTION, allowFilterSelection);
         args.putDouble(ARG_ASPECT_RATIO, aspectRatio);
         args.putBoolean(ARG_SINGLE_DOCUMENT, singleDocument);
+        args.putInt(ARG_MAXIMUM_SCANS, maximumScans);
         args.putInt(ARG_DOC_BODY_COLOR, docBodyColorRes);
         args.putInt(ARG_DOC_BORDER_COLOR, docBorderColorRes);
         args.putInt(ARG_TORCH_COLOR, torchColor);
@@ -227,6 +231,7 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         mAllowFilterSelection = args == null || args.getBoolean(ARG_ALLOW_FILTER_SELECTION, true);
         mAspectRatio = args != null ? args.getDouble(ARG_ASPECT_RATIO, 0) : 0;
         mSingleDocument = args != null && args.getBoolean(ARG_SINGLE_DOCUMENT, true);
+        mMaximumScans = args != null ? args.getInt(ARG_MAXIMUM_SCANS, 0) : 0;
 
         Resources.Theme theme = Objects.requireNonNull(getActivity()).getTheme();
         TypedValue borderColor = new TypedValue();
@@ -339,6 +344,15 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                 mDocumentsButton.setImageURI(mDataList.get(mDataList.size() - 1).getImageUri());
             }
         }
+    }
+
+    private void setButtonVisibility(int visible) {
+        if (mShowFlash)
+            mFlashToggle.setVisibility(visible);
+        if (mAllowFilterSelection)
+            mFiltersButton.setVisibility(visible);
+        if (!mDisableAutomaticCapture)
+            mManualButton.setVisibility(visible);
     }
 
     private void hideColorPicker() {
@@ -492,8 +506,14 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private void processDocumentData(DocumentData data) {
         synchronized (mLock) {
             if (data != null) {
-                addDocument(data);
-                saveCroppedImage(data);
+                if (mMaximumScans == 0 || mDataList == null || mDataList.size() < mMaximumScans) {
+                    addDocument(data);
+                    saveCroppedImage(data);
+                }
+                if (mMaximumScans > 0 && mDataList != null && mDataList.size() >= mMaximumScans) {
+                    mTakePictureButton.setVisibility(GONE);
+                    setButtonVisibility(GONE);
+                }
             }
         }
     }
@@ -583,7 +603,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
                                 // Enable buttons after animation
                                 mDocumentsButton.setVisibility(VISIBLE);
                                 mDoneButton.setVisibility(VISIBLE);
-                                mTakePictureButton.setVisibility(VISIBLE);
+                                if (mDataList.size() < mMaximumScans)
+                                    mTakePictureButton.setVisibility(VISIBLE);
                                 mDocumentsButton.setImageBitmap(bitmap);
                                 mAnimationImage.setVisibility(GONE);
                             }));
