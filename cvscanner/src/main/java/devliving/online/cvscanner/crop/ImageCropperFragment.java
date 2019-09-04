@@ -168,8 +168,7 @@ public class ImageCropperFragment extends BaseFragment implements CropImageView.
                 if (mData != null){
                     try {
                         Uri imageUri = mData.getOriginalImageUri();
-                        int scaleFactor = Util.calculateBitmapSampleSize(getContext(), imageUri);
-                        mBitmap = Util.loadBitmapFromUri(getContext(), scaleFactor, imageUri);
+                        mBitmap = Util.loadBitmapFromUri(getContext(), 1, imageUri);
                     } catch (IOException e) {
                         error = e;
                     }
