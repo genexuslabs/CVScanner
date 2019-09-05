@@ -492,7 +492,12 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private void processDocument(Document document, boolean manual) {
         DocumentData data = DocumentData.Create(getContext(), document, mFilterType);
         if (manual) {
-            double scaleFactor = mCameraSource.getPreviewSize().getWidth() / (double)data.getHeight();
+            double scaleFactor;
+            final int screenRotation = ((WindowManager) getContext().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getRotation();
+            if (DocumentGraphic.isPortrait(screenRotation))
+                scaleFactor = mCameraSource.getPreviewSize().getWidth() / (double)data.getHeight();
+            else
+                scaleFactor = mCameraSource.getPreviewSize().getHeight() / (double)data.getHeight();
             Point[] points = CVProcessor.getUpscaledPoints(data.getPoints(), scaleFactor);
             data.setPreviewPoints(points);
         }
