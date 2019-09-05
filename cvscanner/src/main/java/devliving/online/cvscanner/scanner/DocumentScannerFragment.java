@@ -696,5 +696,9 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
         } else {
             mDocumentsButton.setImageURI(dataList.get(dataList.size() - 1).getImageUri());
         }
+        if (mMaximumScans != 0 && dataList.size() < mMaximumScans) {
+            mTakePictureButton.setVisibility(VISIBLE);
+            setButtonVisibility(VISIBLE);
+        }
     }
 }
