@@ -358,7 +358,8 @@ public class DocumentScannerFragment extends BaseFragment implements DocumentTra
     private void hideColorPicker() {
         mTopPanel.setVisibility(VISIBLE);
         mCancelButton.setVisibility(VISIBLE);
-        mManualButton.setVisibility(VISIBLE);
+        if (!mDisableAutomaticCapture)
+            mManualButton.setVisibility(VISIBLE);
         mFiltersPanel.setVisibility(GONE);
     }
 

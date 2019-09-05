@@ -41,40 +41,109 @@
         android:id="@+id/filtersPanel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/dark_gray"
         android:visibility="gone">
 
-        <ImageButton
-            android:id="@+id/color"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:id="@+id/colorGroup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
-            android:contentDescription="@string/color" />
+            android:orientation="vertical">
 
-        <ImageButton
-            android:id="@+id/grayscale"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
-            android:contentDescription="@string/grayscale" />
+            <ImageButton
+                android:id="@+id/color"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_filter_color"
+                android:contentDescription="@string/color" />
 
-        <ImageButton
-            android:id="@+id/blackWhite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
-            android:contentDescription="@string/black_and_white" />
+            <TextView
+                android:id="@+id/colorText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/color" />
 
-        <ImageButton
-            android:id="@+id/photo"
-            android:layout_width="wrap_content"
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/grayscaleGroup"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:layout_gravity="end"
-            android:src="@drawable/ic_check_circle"
-            android:contentDescription="@string/photo" />
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/grayscale"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_filter_grayscale"
+                android:contentDescription="@string/grayscale" />
+
+            <TextView
+                android:id="@+id/grayscaleText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/grayscale" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/blackWhiteGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/blackWhite"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_filter_blackwhite"
+                android:contentDescription="@string/black_and_white" />
+
+            <TextView
+                android:id="@+id/blackWhiteText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="12sp"
+                android:layout_gravity="center"
+                android:text="@string/black_and_white"/>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/photoGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <ImageButton
+                android:id="@+id/photo"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:layout_gravity="center"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_filter_photo"
+                android:contentDescription="@string/photo" />
+
+            <TextView
+                android:id="@+id/photoText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/photo" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -84,35 +153,39 @@
 
         <ImageButton
             android:id="@+id/crop"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_crop_tool"
             android:contentDescription="@string/crop" />
 
         <ImageButton
             android:id="@+id/filters"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_filter_preview"
             android:contentDescription="@string/filters" />
 
         <ImageButton
             android:id="@+id/rotate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
-            android:src="@drawable/ic_check_circle"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_rotate_right"
             android:contentDescription="@string/rotate" />
 
         <ImageButton
             android:id="@+id/erase"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
             android:layout_weight="1"
             android:layout_gravity="end"
-            android:src="@drawable/ic_check_circle"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_remove"
             android:contentDescription="@string/erase" />
 
     </LinearLayout>

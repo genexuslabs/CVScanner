@@ -46,13 +46,14 @@
 
         <ImageButton
             android:id="@+id/filters"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:src="@drawable/ic_check_circle"
-            android:layout_weight="1"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
             android:layout_gravity="center_vertical"
-            android:contentDescription="@string/color" />
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:contentDescription="@string/color"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_filter_preview" />
 
         <ImageButton
             android:id="@+id/flash"
@@ -86,13 +87,13 @@
 
         <ImageButton
             android:id="@+id/filterClose"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
             android:background="@android:color/transparent"
-            android:scaleType="fitXY"
-            android:src="@drawable/ic_check_circle"
+            android:scaleType="fitCenter"
+            android:src="@drawable/ic_filter_preview"
             android:contentDescription="@string/close_filters"
-            android:layout_marginTop="12dp"/>
+            android:layout_marginTop="-8dp"/>
 
         <Button
             android:id="@+id/color"
@@ -101,8 +102,7 @@
             android:background="@android:color/transparent"
             android:textAppearance="?android:attr/textAppearanceMedium"
             android:textColor="@android:color/white"
-            android:text="@string/color"
-            android:layout_marginStart="8dp"/>
+            android:text="@string/color" />
 
         <Button
             android:id="@+id/grayscale"
