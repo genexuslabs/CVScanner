@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/parent_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    android:fitsSystemWindows="true"
+    >
+
+    <online.devliving.mobilevisionpipeline.camera.CameraSourcePreview
+        android:id="@+id/preview"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center">
+
+        <online.devliving.mobilevisionpipeline.GraphicOverlay
+            android:id="@+id/graphicOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+    </online.devliving.mobilevisionpipeline.camera.CameraSourcePreview>
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/animationImage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/topPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="8dp">
+
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/cancel"
+            android:layout_gravity="start" />
+
+        <ImageButton
+            android:id="@+id/filters"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_check_circle"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/color" />
+
+        <ImageButton
+            android:id="@+id/flash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_flash"
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/flash" />
+
+        <Button
+            android:id="@+id/manual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="@android:color/white"
+            android:text="@string/automatic"
+            android:layout_gravity="end"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/filtersPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:layout_margin="8dp"
+        android:visibility="gone">
+
+        <ImageButton
+            android:id="@+id/filterClose"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:scaleType="fitXY"
+            android:src="@drawable/ic_check_circle"
+            android:contentDescription="@string/close_filters"
+            android:layout_marginTop="12dp"/>
+
+        <Button
+            android:id="@+id/color"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/color"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/grayscale"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/grayscale"
+            android:layout_marginStart="8dp"/>
+
+        <Button
+            android:id="@+id/blackWhite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="@android:color/white"
+            android:text="@string/black_and_white"
+            android:layout_marginStart="8dp"/>
+
+    </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/takePicture"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@android:color/transparent"
+        android:scaleType="fitXY"
+        android:src="@drawable/ic_check_circle"
+        android:layout_gravity="center|end"
+        android:layout_margin="30dp"
+        android:contentDescription="@string/take_picture" />
+
+    <ImageButton
+        android:id="@+id/documents"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@android:color/white"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="30dp"
+        android:scaleType="centerCrop"
+        android:visibility="gone"/>
+
+    <Button
+        android:id="@+id/done"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:background="@android:color/transparent"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@android:color/white"
+        android:text="@string/done"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="30dp"
+        android:visibility="gone"/>
+
+</FrameLayout>
